@@ -1,2 +1,148 @@
-<!DOCTYPE html><html lang="ja"><head><meta charset="UTF-8"><title>自陣キャラ図鑑</title><link rel="stylesheet" href="./style.css"></head><body><header><div class="header-inner"><div><h1>自陣キャラ図鑑</h1><p>HOME</p></div><div class="header-buttons"><a class="header-button" href="./compare.html">質問一覧</a><a class="header-button" href="./stats.html">ステータス比較</a></div></div></header><main><section class="panel"><h2>HOME</h2><div id="list" class="character-list"><p class="note">読み込み中...</p></div></section><details class="panel" id="addPanel"><summary id="sum">＋ キャラクターを追加する</summary><div class="form-content"><div id="form"></div><button onclick="save()">保存する</button><button class="secondary-button" onclick="cancel()" id="cancelBtn" style="display:none">編集をやめる</button><p class="message" id="msg"></p></div></details><details class="panel"><summary>＋ 質問項目を追加する</summary><div class="form-content"><div class="form-grid"><div class="form-item full"><label>質問名</label><input id="qlabel"></div><div><label>カテゴリ</label><select id="qgroup"><option>基本プロフィール</option><option>好きなもの・日常</option><option>恋愛・嗜好</option><option>過去・価値観・物語</option><option>追加質問</option></select></div><div><label>入力形式</label><select id="qtype"><option value="text">短文</option><option value="textarea">長文</option><option value="number">数字</option></select></div></div><button onclick="addQ()">質問を追加する</button><p class="message" id="qmsg"></p></div></details></main><dialog id="dlg"><div id="modal"></div></dialog><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="./config.js"></script><script src="./common.js"></script><script>
-let CH=[],Q=[],edit=null;async function init(){try{Q=await qs();await load();renderForm()}catch(x){list.innerHTML='<p class="note">読み込み失敗：'+e(x.message)+'</p>'}}async function load(){let t=await team();let r=await sb.from('characters').select('id,name,furigana,emoji,icon_url,image_color,basic,created_at').eq('team_id',t.id).order('created_at',{ascending:false});if(r.error)throw r.error;CH=r.data||[];renderList()}function renderList(){if(!CH.length){list.innerHTML='<p class="note">まだキャラクターが登録されていません。</p>';return}list.innerHTML=CH.map(ch=>{let cc=col(ch.image_color),b=ch.basic||{};return`<div class="card" style="--c:${cc}" onclick="openD('${ch.id}')"><div class="card-top">${av(ch)}<div><div class="name">${e(ch.name)}</div><div class="furigana">${e(ch.furigana)||'ふりがな未設定'}</div></div></div><div class="sub">${e(b.job)||'職業未設定'} / ${e(b.age)||'年齢未設定'}歳<br>誕生日：${e(bd(b))}</div><div class="card-tags"><span class="info-chip"><span class="color-dot"></span>${e(ch.image_color)||'カラー未設定'}</span><span class="info-chip">${e(ch.emoji||'👤')}</span></div></div>`}).join('')}function field(q){if(q.key==='job'||q.key==='age')return`<div class="form-item"><label>${e(q.label)}</label><input data-basic="${c(q.key)}" type="${q.key==='age'?'number':'text'}"></div>`;if(q.type==='birthday')return`<div class="form-item"><label>誕生日</label><div class="birthday-row"><select data-basic="birthdayMonth"><option value="">月</option>${Array.from({length:12},(_,i)=>`<option value="${String(i+1).padStart(2,'0')}">${i+1}月</option>`).join('')}</select><select data-basic="birthdayDay"><option value="">日</option>${Array.from({length:31},(_,i)=>`<option value="${String(i+1).padStart(2,'0')}">${i+1}日</option>`).join('')}</select></div></div>`;if(q.type==='textarea')return`<div class="form-item full"><label>${e(q.label)}</label><textarea data-ans="${c(q.key)}"></textarea></div>`;return`<div class="form-item"><label>${e(q.label)}</label><input data-ans="${c(q.key)}" type="${q.type==='number'?'number':'text'}"></div>`}function renderForm(){let gs=groups(Q,true);form.innerHTML=`<div class="form-group"><div class="form-grid"><div><label>名前</label><input id="name"></div><div><label>ふりがな</label><input id="furigana"></div><div><label>絵文字</label><input id="emoji"></div><div><label>イメージカラー</label><div class="color-row"><input id="cp" type="color" value="#4682b4"><input id="icolor" value="#4682b4"></div></div><div class="form-item full"><label>顔・アイコン画像</label><input id="icon" type="file" accept="image/*"></div></div></div>${gs.map(g=>`<details class="form-group" ${g.title==='基本プロフィール'?'open':''}><summary>▼ ${e(g.title)}</summary><div class="form-grid">${g.fields.map(field).join('')}</div></details>`).join('')}<details class="form-group"><summary>▼ ステータス・技能</summary>${SG.map(g=>`<div style="margin-top:16px"><h3>${e(g.title)}</h3><div class="form-grid">${g.keys.map(k=>`<div><label>${e(k)}</label><input data-stat="${c(k)}" type="number" min="0" max="999"></div>`).join('')}</div></div>`).join('')}</details>`;cp.oninput=()=>icolor.value=cp.value;icolor.oninput=()=>{if(/^#[0-9A-Fa-f]{6}$/.test(icolor.value))cp.value=icolor.value}}async function save(){let t=await team(),nm=name.value.trim();if(!nm){msg.textContent='名前を入れてください。';return}let basic={},answers={},vals={};document.querySelectorAll('[data-basic]').forEach(x=>basic[x.dataset.basic]=x.value.trim());document.querySelectorAll('[data-ans]').forEach(x=>answers[x.dataset.ans]=x.value.trim());document.querySelectorAll('[data-stat]').forEach(x=>vals[x.dataset.stat]=x.value.trim());let payload={team_id:t.id,name:nm,furigana:furigana.value.trim(),emoji:emoji.value.trim(),image_color:icolor.value.trim()||'#999999',basic,answers,updated_at:new Date().toISOString()};msg.textContent='保存中...';let id=edit?.id;if(id){let r=await sb.from('characters').update(payload).eq('id',id);if(r.error)throw r.error}else{let r=await sb.from('characters').insert(payload).select('id').single();if(r.error)throw r.error;id=r.data.id}let f=icon.files[0];if(f){let u=await upIcon(f,id);let r=await sb.from('characters').update({icon_url:u,updated_at:new Date().toISOString()}).eq('id',id);if(r.error)throw r.error}let sr=await sb.from('stats').upsert({character_id:id,values:vals,updated_at:new Date().toISOString()});if(sr.error)throw sr.error;msg.textContent='保存しました！';cancel();await load()}async function openD(id){modal.innerHTML='<div class="modal-body"><p class="note">読み込み中...</p></div>';dlg.showModal();let r=await sb.from('characters').select('*').eq('id',id).single();if(r.error){modal.innerHTML='<div class="modal-body"><p class="note">失敗：'+e(r.error.message)+'</p></div>';return}let ch=r.data,cc=col(ch.image_color),gs=groups(Q,true);modal.innerHTML=`<div class="modal-header"><div class="modal-header-inner">${av(ch)}<div><h2>${e(ch.name)}</h2><p>${e(ch.furigana)||'ふりがな未設定'} / ${e(ch.basic?.job)||'職業未設定'}</p></div></div></div><div class="modal-body">${gs.map(g=>`<div class="detail-section"><h3>${e(g.title)}</h3><div class="detail-grid">${g.fields.map(q=>`<div class="detail-item"><div class="detail-label">${e(q.label)}</div><div class="detail-value">${e(qv(ch,q))||'未設定'}</div></div>`).join('')}</div></div>`).join('')}</div><div class="modal-footer"><button onclick="startEdit('${ch.id}')">編集する</button><button class="secondary-button" onclick="dlg.close()">閉じる</button></div>`}async function startEdit(id){let r=await sb.from('characters').select('*').eq('id',id).single();if(r.error)throw r.error;edit=r.data;let sr=await sb.from('stats').select('*').eq('character_id',id).maybeSingle();dlg.close();addPanel.open=true;sum.textContent='✎ キャラクターを編集中';cancelBtn.style.display='inline-block';name.value=edit.name||'';furigana.value=edit.furigana||'';emoji.value=edit.emoji||'';icolor.value=edit.image_color||'#4682b4';if(/^#[0-9A-Fa-f]{6}$/.test(icolor.value))cp.value=icolor.value;document.querySelectorAll('[data-basic]').forEach(x=>x.value=edit.basic?.[x.dataset.basic]||'');document.querySelectorAll('[data-ans]').forEach(x=>x.value=edit.answers?.[x.dataset.ans]||'');let vals=sr.data?.values||{};document.querySelectorAll('[data-stat]').forEach(x=>x.value=vals[x.dataset.stat]||'');scrollTo({top:addPanel.offsetTop-20,behavior:'smooth'})}function cancel(){edit=null;sum.textContent='＋ キャラクターを追加する';cancelBtn.style.display='none';document.querySelectorAll('input,textarea,select').forEach(x=>{if(['qgroup','qtype'].includes(x.id))return;if(x.type==='color')x.value='#4682b4';else x.value=''});icolor.value='#4682b4';cp.value='#4682b4'}async function addQ(){let lab=qlabel.value.trim();if(!lab){qmsg.textContent='質問名を入れてください。';return}let t=await team();let r=await sb.from('questions').insert({team_id:t.id,key:`custom_${Date.now()}`,group_name:qgroup.value,label:lab,type:qtype.value,sort_order:Date.now(),show_in_form:true,show_in_compare:true});if(r.error)throw r.error;qmsg.textContent='質問を追加しました！';qlabel.value='';Q=await qs();renderForm()}init();</script></body></html>
+<!DOCTYPE html><html lang="ja"><head><meta charset="UTF-8"><title>自陣キャラ図鑑</title><link rel="stylesheet" href="./style.css"></head><body><header><div class="header-inner"><div><h1>自陣キャラ図鑑</h1><p>HOME</p></div><div class="header-buttons"><a class="header-button" href="./compare.html">質問一覧</a><a class="header-button" href="./stats.html">ステータス比較</a></div></div></header><main><section class="panel"><h2>HOME</h2><div id="list" class="character-list"><p class="note">読み込み中...</p></div></section><details class="panel" id="addPanel"><summary id="sum">＋ キャラクターを追加する</summary><div class="form-content"><div id="form"></div><button id="saveBtn" type="button">保存する</button><button class="secondary-button" onclick="cancel()" id="cancelBtn" style="display:none">編集をやめる</button><p class="message" id="msg"></p></div></details><details class="panel"><summary>＋ 質問項目を追加する</summary><div class="form-content"><div class="form-grid"><div class="form-item full"><label>質問名</label><input id="qlabel"></div><div><label>カテゴリ</label><select id="qgroup"><option>基本プロフィール</option><option>好きなもの・日常</option><option>恋愛・嗜好</option><option>過去・価値観・物語</option><option>追加質問</option></select></div><div><label>入力形式</label><select id="qtype"><option value="text">短文</option><option value="textarea">長文</option><option value="number">数字</option></select></div></div><button id="addQuestionBtn" type="button">質問を追加する</button><p class="message" id="qmsg"></p></div></details></main><dialog id="dlg"><div id="modal"></div></dialog><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="./config.js"></script><script src="./common.js"></script><script>
+let CH=[],Q=[],edit=null;async function init(){try{Q=await qs();await load();renderForm()}catch(x){list.innerHTML='<p class="note">読み込み失敗：'+(x&&x.message?x.message:x)+'</p>'; console.error(x);}}async function load(){let t=await team();let r=await sb.from('characters').select('id,name,furigana,emoji,icon_url,image_color,basic,created_at').eq('team_id',t.id).order('created_at',{ascending:false});if(r.error)throw r.error;CH=r.data||[];renderList()}function renderList(){if(!CH.length){list.innerHTML='<p class="note">まだキャラクターが登録されていません。</p>';return}list.innerHTML=CH.map(ch=>{let cc=col(ch.image_color),b=ch.basic||{};return`<div class="card" style="--c:${cc}" onclick="openD('${ch.id}')"><div class="card-top">${av(ch)}<div><div class="name">${e(ch.name)}</div><div class="furigana">${e(ch.furigana)||'ふりがな未設定'}</div></div></div><div class="sub">${e(b.job)||'職業未設定'} / ${e(b.age)||'年齢未設定'}歳<br>誕生日：${e(bd(b))}</div><div class="card-tags"><span class="info-chip"><span class="color-dot"></span>${e(ch.image_color)||'カラー未設定'}</span><span class="info-chip">${e(ch.emoji||'👤')}</span></div></div>`}).join('')}function field(q){if(q.key==='job'||q.key==='age')return`<div class="form-item"><label>${e(q.label)}</label><input data-basic="${c(q.key)}" type="${q.key==='age'?'number':'text'}"></div>`;if(q.type==='birthday')return`<div class="form-item"><label>誕生日</label><div class="birthday-row"><select data-basic="birthdayMonth"><option value="">月</option>${Array.from({length:12},(_,i)=>`<option value="${String(i+1).padStart(2,'0')}">${i+1}月</option>`).join('')}</select><select data-basic="birthdayDay"><option value="">日</option>${Array.from({length:31},(_,i)=>`<option value="${String(i+1).padStart(2,'0')}">${i+1}日</option>`).join('')}</select></div></div>`;if(q.type==='textarea')return`<div class="form-item full"><label>${e(q.label)}</label><textarea data-ans="${c(q.key)}"></textarea></div>`;return`<div class="form-item"><label>${e(q.label)}</label><input data-ans="${c(q.key)}" type="${q.type==='number'?'number':'text'}"></div>`}function renderForm(){let gs=groups(Q,true);form.innerHTML=`<div class="form-group"><div class="form-grid"><div><label>名前</label><input id="name"></div><div><label>ふりがな</label><input id="furigana"></div><div><label>絵文字</label><input id="emoji"></div><div><label>イメージカラー</label><div class="color-row"><input id="cp" type="color" value="#4682b4"><input id="icolor" value="#4682b4"></div></div><div class="form-item full"><label>顔・アイコン画像</label><input id="icon" type="file" accept="image/*"></div></div></div>${gs.map(g=>`<details class="form-group" ${g.title==='基本プロフィール'?'open':''}><summary>▼ ${e(g.title)}</summary><div class="form-grid">${g.fields.map(field).join('')}</div></details>`).join('')}<details class="form-group"><summary>▼ ステータス・技能</summary>${SG.map(g=>`<div style="margin-top:16px"><h3>${e(g.title)}</h3><div class="form-grid">${g.keys.map(k=>`<div><label>${e(k)}</label><input data-stat="${c(k)}" type="number" min="0" max="999"></div>`).join('')}</div></div>`).join('')}</details>`;document.getElementById('cp').oninput=()=>document.getElementById('icolor').value=document.getElementById('cp').value;document.getElementById('icolor').oninput=()=>{if(/^#[0-9A-Fa-f]{6}$/.test(document.getElementById('icolor').value))document.getElementById('cp').value=document.getElementById('icolor').value}}async function save(){
+  const msgEl = document.getElementById('msg');
+  msgEl.textContent = '保存処理を開始しました...';
+
+  const nameEl = document.getElementById('name');
+  const furiganaEl = document.getElementById('furigana');
+  const emojiEl = document.getElementById('emoji');
+  const colorEl = document.getElementById('icolor');
+  const iconEl = document.getElementById('icon');
+
+  const t = await team();
+  const nm = nameEl.value.trim();
+
+  if(!nm){
+    msgEl.textContent = '名前を入れてください。';
+    return;
+  }
+
+  let basic = {};
+  let answers = {};
+  let vals = {};
+
+  document.querySelectorAll('[data-basic]').forEach(x => basic[x.dataset.basic] = x.value.trim());
+  document.querySelectorAll('[data-ans]').forEach(x => answers[x.dataset.ans] = x.value.trim());
+  document.querySelectorAll('[data-stat]').forEach(x => vals[x.dataset.stat] = x.value.trim());
+
+  let payload = {
+    team_id: t.id,
+    name: nm,
+    furigana: furiganaEl.value.trim(),
+    emoji: emojiEl.value.trim(),
+    image_color: colorEl.value.trim() || '#999999',
+    basic,
+    answers,
+    updated_at: new Date().toISOString()
+  };
+
+  msgEl.textContent = '保存中...';
+
+  let id = edit?.id;
+
+  if(id){
+    let r = await sb.from('characters').update(payload).eq('id', id);
+    if(r.error) throw r.error;
+  } else {
+    let r = await sb.from('characters').insert(payload).select('id').single();
+    if(r.error) throw r.error;
+    id = r.data.id;
+  }
+
+  let f = iconEl.files[0];
+
+  if(f){
+    let u = await upIcon(f, id);
+    let r = await sb.from('characters').update({icon_url:u, updated_at:new Date().toISOString()}).eq('id', id);
+    if(r.error) throw r.error;
+  }
+
+  let sr = await sb.from('stats').upsert({
+    character_id: id,
+    values: vals,
+    updated_at: new Date().toISOString()
+  });
+
+  if(sr.error) throw sr.error;
+
+  msgEl.textContent = '保存しました！';
+  cancel();
+  await load();
+}async function openD(id){modal.innerHTML='<div class="modal-body"><p class="note">読み込み中...</p></div>';dlg.showModal();let r=await sb.from('characters').select('*').eq('id',id).single();if(r.error){modal.innerHTML='<div class="modal-body"><p class="note">失敗：'+e(r.error.message)+'</p></div>';return}let ch=r.data,cc=col(ch.image_color),gs=groups(Q,true);modal.innerHTML=`<div class="modal-header"><div class="modal-header-inner">${av(ch)}<div><h2>${e(ch.name)}</h2><p>${e(ch.furigana)||'ふりがな未設定'} / ${e(ch.basic?.job)||'職業未設定'}</p></div></div></div><div class="modal-body">${gs.map(g=>`<div class="detail-section"><h3>${e(g.title)}</h3><div class="detail-grid">${g.fields.map(q=>`<div class="detail-item"><div class="detail-label">${e(q.label)}</div><div class="detail-value">${e(qv(ch,q))||'未設定'}</div></div>`).join('')}</div></div>`).join('')}</div><div class="modal-footer"><button onclick="startEdit('${ch.id}')">編集する</button><button class="secondary-button" onclick="dlg.close()">閉じる</button></div>`}async function startEdit(id){let r=await sb.from('characters').select('*').eq('id',id).single();if(r.error)throw r.error;edit=r.data;let sr=await sb.from('stats').select('*').eq('character_id',id).maybeSingle();document.getElementById('dlg').close();document.getElementById('addPanel').open=true;document.getElementById('sum').textContent='✎ キャラクターを編集中';document.getElementById('cancelBtn').style.display='inline-block';document.getElementById('name').value=edit.name||'';document.getElementById('furigana').value=edit.furigana||'';document.getElementById('emoji').value=edit.emoji||'';document.getElementById('icolor').value=edit.image_color||'#4682b4';if(/^#[0-9A-Fa-f]{6}$/.test(icolor.value))cp.value=icolor.value;document.querySelectorAll('[data-basic]').forEach(x=>x.value=edit.basic?.[x.dataset.basic]||'');document.querySelectorAll('[data-ans]').forEach(x=>x.value=edit.answers?.[x.dataset.ans]||'');let vals=sr.data?.values||{};document.querySelectorAll('[data-stat]').forEach(x=>x.value=vals[x.dataset.stat]||'');scrollTo({top:addPanel.offsetTop-20,behavior:'smooth'})}function cancel(){
+  edit = null;
+  document.getElementById('sum').textContent = '＋ キャラクターを追加する';
+  document.getElementById('cancelBtn').style.display = 'none';
+
+  document.querySelectorAll('input,textarea,select').forEach(x => {
+    if(['qgroup','qtype'].includes(x.id)) return;
+    if(x.type === 'color') x.value = '#4682b4';
+    else x.value = '';
+  });
+
+  const colorEl = document.getElementById('icolor');
+  const pickerEl = document.getElementById('cp');
+  if(colorEl) colorEl.value = '#4682b4';
+  if(pickerEl) pickerEl.value = '#4682b4';
+}async function addQ(){
+  const labelEl = document.getElementById('qlabel');
+  const groupEl = document.getElementById('qgroup');
+  const typeEl = document.getElementById('qtype');
+  const msgEl = document.getElementById('qmsg');
+
+  let lab = labelEl.value.trim();
+
+  if(!lab){
+    msgEl.textContent = '質問名を入れてください。';
+    return;
+  }
+
+  let t = await team();
+  let r = await sb.from('questions').insert({
+    team_id: t.id,
+    key: `custom_${Date.now()}`,
+    group_name: groupEl.value,
+    label: lab,
+    type: typeEl.value,
+    sort_order: Date.now(),
+    show_in_form: true,
+    show_in_compare: true
+  });
+
+  if(r.error) throw r.error;
+
+  msgEl.textContent = '質問を追加しました！';
+  labelEl.value = '';
+  Q = await qs();
+  renderForm();
+}
+async function safeSave(){
+  const m=document.getElementById('msg');
+  try{
+    if(!document.getElementById('name')){
+      if(m)m.textContent='入力フォームの読み込みが終わっていません。ページを再読み込みしてください。';
+      return;
+    }
+    await save();
+  }catch(x){
+    console.error(x);
+    if(m)m.textContent='保存に失敗しました：'+(x&&x.message?x.message:x);
+  }
+}
+async function safeAddQuestion(){
+  const m=document.getElementById('qmsg');
+  try{
+    await addQ();
+  }catch(x){
+    console.error(x);
+    if(m)m.textContent='質問追加に失敗しました：'+(x&&x.message?x.message:x);
+  }
+}
+function bindButtons(){
+  const s=document.getElementById('saveBtn');
+  const q=document.getElementById('addQuestionBtn');
+  if(s) s.addEventListener('click', safeSave);
+  if(q) q.addEventListener('click', safeAddQuestion);
+}
+bindButtons();
+
+init();</script></body></html>
