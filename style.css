@@ -687,3 +687,33 @@ canvas{
 }
 
 .brand-jp{font:inherit;color:inherit;letter-spacing:inherit;text-shadow:inherit;background:none;-webkit-background-clip:initial;background-clip:initial}.brand-en{display:none!important}
+
+.modal-x{
+  position:fixed;
+  top:12px;
+  right:12px;
+  z-index:30;
+  width:34px;
+  height:34px;
+  margin:0;
+  padding:0;
+  border-radius:999px;
+  background:rgba(255,255,255,.9);
+  color:#252936;
+  border:1px solid rgba(210,216,230,.95);
+  box-shadow:0 8px 20px rgba(70,80,120,.14);
+  font-size:20px;
+  line-height:1;
+}
+.modal-edit-top{
+  position:fixed;
+  top:12px;
+  right:54px;
+  z-index:30;
+  margin:0;
+  padding:9px 14px;
+  border-radius:999px;
+  font-size:13px;
+}
+.modal-footer{display:none!important}
+dialog{position:relative}

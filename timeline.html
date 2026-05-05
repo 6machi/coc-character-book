@@ -212,6 +212,49 @@
         width: 148px;
       }
     }
+  
+    .timeline-char-col{
+      min-width:170px !important;
+      width:170px !important;
+      padding:6px 8px !important;
+    }
+    .timeline-corner{
+      min-width:170px !important;
+      width:170px !important;
+    }
+    .timeline-char-simple{
+      --c:#999;
+      display:grid;
+      gap:4px;
+      border-left:4px solid var(--c);
+      padding-left:8px;
+      min-height:34px;
+      align-content:center;
+    }
+    .timeline-char-simple b{
+      font-size:13px;
+      line-height:1.3;
+    }
+    .timeline-char-simple span{
+      color:var(--muted);
+      font-size:11px;
+      line-height:1.2;
+    }
+    .timeline-cell-inner{
+      min-height:96px !important;
+    }
+    .timeline-cell textarea{
+      min-height:66px !important;
+    }
+    .timeline-cell,.timeline-year-head{
+      min-width:150px !important;
+      width:150px !important;
+    }
+    .timeline-age-line{
+      min-height:24px !important;
+      padding:4px 7px !important;
+    }
+
   </style>
 </head>
 
@@ -328,7 +371,7 @@
       const head = `
         <thead>
           <tr>
-            <th class="timeline-corner">HO / 名前</th>
+            <th class="timeline-corner">名前</th>
             ${yearList.map(year => `
               <th class="timeline-year-head">
                 <span class="timeline-year-main">${year}年前</span>
@@ -349,22 +392,13 @@
 
     function renderCharacterRow(character, yearList) {
       const color = col(character.image_color);
-      const emoji = character.emoji || "👤";
-
-      const icon = character.icon_url
-        ? `<span class="timeline-emoji" style="--c:${color};"><img src="${e(character.icon_url)}" alt="icon"></span>`
-        : `<span class="timeline-emoji" style="--c:${color};">${e(emoji)}</span>`;
 
       return `
         <tr>
           <th class="timeline-char-col">
-            <div class="timeline-char" style="--c:${color};">
-              ${icon}
-              <div>
-                <b>${e(character.name || "名前未設定")}</b>
-                <div class="timeline-small">${e(character.furigana || "")}</div>
-                <div class="timeline-small">現在年齢：${character.currentAge}歳</div>
-              </div>
+            <div class="timeline-char-simple" style="--c:${color};">
+              <b>${e(character.name || "名前未設定")}</b>
+              <span>現在年齢：${character.currentAge}歳</span>
             </div>
           </th>
           ${yearList.map(year => renderCell(character, year, color)).join("")}
