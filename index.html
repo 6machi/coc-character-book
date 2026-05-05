@@ -68,7 +68,26 @@ let CH=[],Q=[],edit=null;async function init(){try{Q=await qs();await load();ren
   msgEl.textContent = '保存しました！';
   cancel();
   await load();
-}async function openD(id){modal.innerHTML='<div class="modal-body"><p class="note">読み込み中...</p></div>';dlg.showModal();sb.from('characters').select('*').eq('id',id).single().then(r=>{if(r.error){modal.innerHTML='<div class="modal-body"><p class="note">失敗：'+e(r.error.message)+'</p></div>';return}let ch=r.data,cc=col(ch.image_color),gs=groups(Q,true);modal.innerHTML=`<button class="modal-x" onclick="dlg.close()" aria-label="閉じる">×</button><button class="modal-edit-top" onclick="startEdit('${ch.id}')">編集</button><div class="modal-header"><div class="modal-header-inner">${av(ch)}<div><h2>${e(ch.name)}</h2><p>${e(ch.furigana)||'ふりがな未設定'} / ${e(ch.basic?.job)||'職業未設定'}</p></div></div></div><div class="modal-body">${gs.map(g=>`<div class="detail-section"><h3>${e(g.title)}</h3><div class="detail-grid">${g.fields.map(q=>`<div class="detail-item"><div class="detail-label">${e(q.label)}</div><div class="detail-value">${e(qv(ch,q))||'未設定'}</div></div>`).join('')}</div></div>`).join('')}</div>`})}async function startEdit(id){let r=await sb.from('characters').select('*').eq('id',id).single();if(r.error)throw r.error;edit=r.data;let sr=await sb.from('stats').select('*').eq('character_id',id).maybeSingle();document.getElementById('dlg').close();document.getElementById('addPanel').open=true;document.getElementById('sum').textContent='✎ キャラクターを編集中';document.getElementById('cancelBtn').style.display='inline-block';document.getElementById('name').value=edit.name||'';document.getElementById('furigana').value=edit.furigana||'';document.getElementById('emoji').value=edit.emoji||'';document.getElementById('icolor').value=edit.image_color||'#4682b4';if(/^#[0-9A-Fa-f]{6}$/.test(icolor.value))cp.value=icolor.value;document.querySelectorAll('[data-basic]').forEach(x=>x.value=edit.basic?.[x.dataset.basic]||'');document.querySelectorAll('[data-ans]').forEach(x=>x.value=edit.answers?.[x.dataset.ans]||'');let vals=sr.data?.values||{};document.querySelectorAll('[data-stat]').forEach(x=>x.value=vals[x.dataset.stat]||'');scrollTo({top:addPanel.offsetTop-20,behavior:'smooth'})}function cancel(){
+}async function openD(id){modal.innerHTML='<div class="modal-body"><p class="note">読み込み中...</p></div>';dlg.showModal();sb.from('characters').select('*').eq('id',id).single().then(r=>{if(r.error){modal.innerHTML='<div class="modal-body"><p class="note">失敗：'+e(r.error.message)+'</p></div>';return}let ch=r.data,cc=col(ch.image_color),gs=groups(Q,true);modal.innerHTML=`<button class="modal-x" onclick="dlg.close()" aria-label="閉じる">×</button><button class="modal-delete-top" onclick="deleteCharacter('${ch.id}', '${c(ch.name||'名前未設定')}')">削除</button><button class="modal-edit-top" onclick="startEdit('${ch.id}')">編集</button><div class="modal-header"><div class="modal-header-inner">${av(ch)}<div><h2>${e(ch.name)}</h2><p>${e(ch.furigana)||'ふりがな未設定'} / ${e(ch.basic?.job)||'職業未設定'}</p></div></div></div><div class="modal-body">${gs.map(g=>`<div class="detail-section"><h3>${e(g.title)}</h3><div class="detail-grid">${g.fields.map(q=>`<div class="detail-item"><div class="detail-label">${e(q.label)}</div><div class="detail-value">${e(qv(ch,q))||'未設定'}</div></div>`).join('')}</div></div>`).join('')}</div>`})}async function startEdit(id){let r=await sb.from('characters').select('*').eq('id',id).single();if(r.error)throw r.error;edit=r.data;let sr=await sb.from('stats').select('*').eq('character_id',id).maybeSingle();document.getElementById('dlg').close();document.getElementById('addPanel').open=true;document.getElementById('sum').textContent='✎ キャラクターを編集中';document.getElementById('cancelBtn').style.display='inline-block';document.getElementById('name').value=edit.name||'';document.getElementById('furigana').value=edit.furigana||'';document.getElementById('emoji').value=edit.emoji||'';document.getElementById('icolor').value=edit.image_color||'#4682b4';if(/^#[0-9A-Fa-f]{6}$/.test(icolor.value))cp.value=icolor.value;document.querySelectorAll('[data-basic]').forEach(x=>x.value=edit.basic?.[x.dataset.basic]||'');document.querySelectorAll('[data-ans]').forEach(x=>x.value=edit.answers?.[x.dataset.ans]||'');let vals=sr.data?.values||{};document.querySelectorAll('[data-stat]').forEach(x=>x.value=vals[x.dataset.stat]||'');scrollTo({top:addPanel.offsetTop-20,behavior:'smooth'})}async function deleteCharacter(id, name){
+  const label = name || 'このキャラクター';
+  const ok = confirm(label + 'を削除しますか？\\n\\nキャラクター情報、ステータス、時系列、相関図の関連データも削除されます。');
+  if(!ok) return;
+
+  const second = confirm('本当に削除しますか？この操作は元に戻せません。');
+  if(!second) return;
+
+  const result = await sb.from('characters').delete().eq('id', id);
+
+  if(result.error){
+    alert('削除に失敗しました：' + result.error.message);
+    return;
+  }
+
+  try{ dlg.close(); }catch(e){}
+  if(edit && edit.id === id) cancel();
+  await load();
+}
+function cancel(){
   edit = null;
   document.getElementById('sum').textContent = '＋ キャラクターを追加する';
   document.getElementById('cancelBtn').style.display = 'none';

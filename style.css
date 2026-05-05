@@ -1009,3 +1009,21 @@ dialog{position:relative}
     width:auto !important;
   }
 }
+
+.modal-delete-top{
+  position:fixed;
+  top:12px;
+  right:110px;
+  z-index:30;
+  margin:0;
+  padding:9px 14px;
+  border-radius:999px;
+  font-size:13px;
+  background:rgba(255,255,255,.9);
+  color:#9b1c2c;
+  border:1px solid rgba(220,190,196,.95);
+  box-shadow:0 8px 20px rgba(70,80,120,.12);
+}
+.modal-delete-top:hover{
+  background:#fff5f6;
+}
