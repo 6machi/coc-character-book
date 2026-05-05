@@ -1,0 +1,787 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>ステータス比較</title>
+
+  <style>
+    :root {
+      --page-bg: #f7f7f8;
+      --panel-bg: #ffffff;
+      --text-main: #222222;
+      --text-sub: #666666;
+      --text-muted: #8a8a8a;
+      --line: #d8d8dc;
+      --soft-line: #ececef;
+      --button-dark: #222222;
+      --button-light: #f1f1f3;
+      --input-bg: #ffffff;
+    }
+
+    body {
+      margin: 0;
+      font-family: "Hiragino Sans", "Yu Gothic", sans-serif;
+      background: var(--page-bg);
+      color: var(--text-main);
+    }
+
+    header {
+      padding: 28px 20px 20px;
+      background: #ffffff;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .header-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      align-items: flex-start;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 28px;
+    }
+
+    p {
+      margin: 8px 0 0;
+      color: var(--text-sub);
+      font-size: 14px;
+      line-height: 1.7;
+    }
+
+    .header-buttons {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .header-button,
+    .secondary-button {
+      background: var(--button-light);
+      color: var(--text-main);
+      border: 1px solid var(--line);
+      font-size: 13px;
+      padding: 9px 14px;
+      border-radius: 999px;
+      text-decoration: none;
+      display: inline-block;
+      cursor: pointer;
+    }
+
+    main {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    .panel {
+      background: var(--panel-bg);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 20px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.04);
+      margin-bottom: 20px;
+    }
+
+    .panel h2 {
+      margin: 0;
+      font-size: 22px;
+    }
+
+    .note {
+      margin-top: 8px;
+      color: var(--text-muted);
+      font-size: 13px;
+      line-height: 1.7;
+    }
+
+    label {
+      display: block;
+      margin: 0 0 6px;
+      color: var(--text-sub);
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    input,
+    select {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 10px;
+      border-radius: 10px;
+      border: 1px solid var(--line);
+      background: var(--input-bg);
+      color: var(--text-main);
+      font-size: 14px;
+    }
+
+    button {
+      margin-top: 16px;
+      padding: 12px 18px;
+      border: none;
+      border-radius: 999px;
+      background: var(--button-dark);
+      color: #fff;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    button:hover {
+      opacity: 0.86;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 14px;
+    }
+
+    .form-item.full {
+      grid-column: 1 / -1;
+    }
+
+    .stat-group {
+      margin-top: 18px;
+      border-top: 1px solid var(--soft-line);
+      padding-top: 16px;
+    }
+
+    .stat-group h3 {
+      margin: 0 0 10px;
+      font-size: 16px;
+    }
+
+    .layout-two {
+      display: grid;
+      grid-template-columns: 380px 1fr;
+      gap: 20px;
+      align-items: start;
+      margin-top: 16px;
+    }
+
+    .compare-list {
+      display: grid;
+      gap: 8px;
+      max-height: 420px;
+      overflow: auto;
+      border: 1px solid var(--soft-line);
+      border-radius: 14px;
+      padding: 10px;
+      background: #fafafa;
+    }
+
+    .compare-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+    }
+
+    .compare-item input {
+      width: auto;
+    }
+
+    .mini-avatar,
+    .mini-emoji {
+      --character-color: #999999;
+      width: 28px;
+      height: 28px;
+      border-radius: 9px;
+      background: var(--character-color);
+      border: 1px solid rgba(0,0,0,0.12);
+      overflow: hidden;
+      flex: 0 0 auto;
+    }
+
+    .mini-avatar {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .mini-avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      display: block;
+    }
+
+    .mini-emoji {
+      display: grid;
+      place-items: center;
+      font-size: 16px;
+    }
+
+    .chart-box {
+      background: #fff;
+      border: 1px solid var(--soft-line);
+      border-radius: 18px;
+      padding: 16px;
+      overflow: auto;
+    }
+
+    canvas {
+      display: block;
+      max-width: 100%;
+      margin: 0 auto;
+    }
+
+    .table-wrap {
+      margin-top: 18px;
+      overflow: auto;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: white;
+      max-height: 70vh;
+    }
+
+    table {
+      border-collapse: separate;
+      border-spacing: 0;
+      min-width: 100%;
+      width: max-content;
+    }
+
+    th,
+    td {
+      border-right: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+      padding: 9px 11px;
+      vertical-align: top;
+      font-size: 13px;
+      line-height: 1.6;
+      background: #fff;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    thead th {
+      position: sticky;
+      top: 0;
+      z-index: 5;
+      background: #ffffff;
+    }
+
+    .sticky-col {
+      position: sticky;
+      left: 0;
+      z-index: 4;
+      background: #f3f4f6;
+      min-width: 170px;
+      max-width: 170px;
+      width: 170px;
+      font-weight: bold;
+    }
+
+    thead .sticky-col {
+      z-index: 6;
+      background: #e9ecef;
+    }
+
+    .character-col {
+      min-width: 150px;
+      max-width: 150px;
+      width: 150px;
+      background: #ffffff;
+      text-align: center;
+    }
+
+    .group-row th,
+    .group-row td {
+      background: #e9ecef;
+      font-weight: bold;
+      color: #334;
+    }
+
+    #saveMessage {
+      margin-top: 12px;
+      color: var(--text-muted);
+      font-size: 14px;
+    }
+
+    @media (max-width: 800px) {
+      .header-inner {
+        display: block;
+      }
+
+      .header-buttons {
+        margin-top: 14px;
+      }
+
+      main {
+        padding: 14px;
+      }
+
+      .form-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .layout-two {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <div class="header-inner">
+      <div>
+        <h1 id="siteTitle">自陣キャラ図鑑</h1>
+        <p>ステータス比較</p>
+      </div>
+
+      <div class="header-buttons">
+        <a class="header-button" href="./index.html">HOME</a>
+        <a class="header-button" href="./compare.html">質問一覧</a>
+        <button class="header-button" onclick="loadData()">再読み込み</button>
+      </div>
+    </div>
+  </header>
+
+  <main>
+
+    <section class="panel">
+      <h2>ステータス比較</h2>
+      <div class="note">
+        STR〜EDUの8項目を八角形レーダーで比較します。比較したいキャラにチェックを入れてください。入力はHOMEのキャラクター追加・編集から行えます。
+      </div>
+
+      <div class="layout-two">
+        <div>
+          <div class="compare-list" id="compareChecks"></div>
+        </div>
+
+        <div class="chart-box">
+          <canvas id="radarCanvas" width="620" height="520"></canvas>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>ステータス比較表</h2>
+      <div class="note">
+        左に項目、上にキャラクターを並べたステータス比較表です。
+      </div>
+
+      <div class="table-wrap" id="statsTableWrap">
+        <div class="note">読み込み中...</div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const API_URL = "https://script.google.com/macros/s/AKfycbz6cbVwkuuVhSlIW405gepzZi7VzzBPtYzosb2Bi1wZ6WOw4qm82KMhVBl__nUVwoLu/exec";
+
+    const ABILITY_KEYS = ["STR", "CON", "POW", "DEX", "APP", "SIZ", "INT", "EDU"];
+
+    const STAT_GROUPS = [
+      {
+        title: "基本ステータス",
+        keys: ABILITY_KEYS
+      },
+      {
+        title: "基本戦闘技能",
+        keys: ["回避", "キック", "組み付き", "こぶし（パンチ）", "頭突き", "投擲", "マーシャルアーツ", "拳銃", "サブマシンガン", "ショットガン", "マシンガン", "ライフル"]
+      },
+      {
+        title: "基本探索技能",
+        keys: ["応急手当", "鍵開け", "隠す", "隠れる", "聞き耳", "忍び歩き", "写真術", "精神分析", "追跡", "登攀", "図書館", "目星"]
+      },
+      {
+        title: "基本行動技能",
+        keys: ["運転", "機械修理", "重機械操作", "乗馬", "水泳", "製作", "操縦", "跳躍", "電気修理", "ナビゲート", "変装"]
+      },
+      {
+        title: "基本交渉技能",
+        keys: ["言いくるめ", "信用", "説得", "値切り", "母国語", "日本語", "ヒプノーシス"]
+      },
+      {
+        title: "基本知識技能",
+        keys: ["医学", "オカルト", "化学", "クトゥルフ神話", "芸術", "経理", "考古学", "コンピューター", "心理学", "人類学", "生物学", "地質学", "電子工学", "天文学", "博物学", "物理学", "法律", "薬学", "歴史"]
+      }
+    ];
+
+    let localCharacters = [];
+    let statsList = [];
+    let statsMap = {};
+
+    function applySettings() {
+      const title = localStorage.getItem("siteTitle") || "自陣キャラ図鑑";
+      document.getElementById("siteTitle").textContent = title;
+      document.title = title + " - ステータス比較";
+    }
+
+    function loadData() {
+      const oldScript = document.getElementById("jsonpScript");
+      if (oldScript) oldScript.remove();
+
+      const script = document.createElement("script");
+      script.id = "jsonpScript";
+      script.src = API_URL + "?callback=receiveData&light=1&v=" + Date.now();
+
+      script.onerror = function () {
+        document.getElementById("statsTableWrap").innerHTML = `<div class="note">読み込みに失敗しました。</div>`;
+      };
+
+      document.body.appendChild(script);
+    }
+
+    function receiveData(payload) {
+      localCharacters = (payload.characters || [])
+        .filter(c => c.teamId === "paranormal-crime")
+        .reverse();
+
+      statsList = payload.stats || [];
+      statsMap = {};
+      statsList.forEach(item => {
+        if (item.characterId) statsMap[item.characterId] = item;
+      });
+
+      renderCompareChecks();
+      renderStatsTable();
+      drawRadarChart();
+    }
+
+    function renderCharacterSelect() {
+      const select = document.getElementById("characterSelect");
+
+      if (localCharacters.length === 0) {
+        select.innerHTML = `<option value="">キャラクターがありません</option>`;
+        return;
+      }
+
+      select.innerHTML = localCharacters.map(c => `
+        <option value="${escapeAttribute(c.id)}">${escapeHtml(c.name || "名前未設定")}</option>
+      `).join("");
+    }
+
+    function renderStatsForm() {
+      const form = document.getElementById("statsForm");
+
+      form.innerHTML = STAT_GROUPS.map(group => `
+        <div class="stat-group">
+          <h3>${escapeHtml(group.title)}</h3>
+          <div class="form-grid">
+            ${group.keys.map(key => `
+              <div class="form-item">
+                <label for="stat_${escapeAttribute(key)}">${escapeHtml(key)}</label>
+                <input id="stat_${escapeAttribute(key)}" data-stat-key="${escapeAttribute(key)}" type="number" min="0" max="999" step="1">
+              </div>
+            `).join("")}
+          </div>
+        </div>
+      `).join("");
+
+      loadStatsFormForSelected();
+    }
+
+    function loadStatsFormForSelected() {
+      const characterId = document.getElementById("characterSelect").value;
+      const stats = statsMap[characterId] || {};
+
+      document.querySelectorAll("[data-stat-key]").forEach(input => {
+        const key = input.dataset.statKey;
+        input.value = stats[key] || "";
+      });
+    }
+
+    async function saveStats() {
+      const characterId = document.getElementById("characterSelect").value;
+
+      if (!characterId) {
+        document.getElementById("saveMessage").textContent = "キャラクターを選んでください。";
+        return;
+      }
+
+      const data = {
+        mode: "saveStats",
+        characterId: characterId
+      };
+
+      document.querySelectorAll("[data-stat-key]").forEach(input => {
+        const key = input.dataset.statKey;
+        data[key] = input.value.trim();
+      });
+
+      document.getElementById("saveMessage").textContent = "保存中...";
+
+      try {
+        await fetch(API_URL, {
+          method: "POST",
+          mode: "no-cors",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(data)
+        });
+
+        document.getElementById("saveMessage").textContent = "保存しました！再読み込みします。";
+        setTimeout(loadData, 1000);
+      } catch (error) {
+        document.getElementById("saveMessage").textContent = "保存に失敗しました。";
+      }
+    }
+
+    function renderCompareChecks() {
+      const box = document.getElementById("compareChecks");
+
+      if (localCharacters.length === 0) {
+        box.innerHTML = `<div class="note">キャラクターがありません。</div>`;
+        return;
+      }
+
+      box.innerHTML = localCharacters.map((character, index) => {
+        const color = normalizeColorForDisplay(character.imageColor);
+        const emoji = character.emoji || "👤";
+        const avatar = `<div class="mini-emoji" style="--character-color:${color};">${escapeHtml(emoji)}</div>`;
+
+        return `
+          <label class="compare-item">
+            <input type="checkbox" value="${escapeAttribute(character.id)}" ${index < 3 ? "checked" : ""} onchange="drawRadarChart()">
+            ${avatar}
+            <span>${escapeHtml(character.name || "名前未設定")}</span>
+          </label>
+        `;
+      }).join("");
+    }
+
+    function drawRadarChart() {
+      const canvas = document.getElementById("radarCanvas");
+      const ctx = canvas.getContext("2d");
+      const width = canvas.width;
+      const height = canvas.height;
+      const centerX = width / 2;
+      const centerY = height / 2 + 12;
+      const radius = 180;
+      const maxValue = 100;
+
+      ctx.clearRect(0, 0, width, height);
+
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(0, 0, width, height);
+
+      drawGrid(ctx, centerX, centerY, radius, maxValue);
+
+      const selectedIds = Array.from(document.querySelectorAll("#compareChecks input:checked"))
+        .map(input => input.value);
+
+      selectedIds.forEach((id, index) => {
+        const character = localCharacters.find(c => c.id === id);
+        if (!character) return;
+
+        const stats = statsMap[id] || {};
+        const color = normalizeColorForDisplay(character.imageColor);
+        const values = ABILITY_KEYS.map(key => numberOrZero(stats[key]));
+
+        drawRadarLine(ctx, centerX, centerY, radius, values, color);
+        drawLegend(ctx, character, color, index);
+      });
+    }
+
+    function drawGrid(ctx, cx, cy, radius, maxValue) {
+      ctx.strokeStyle = "#d8d8dc";
+      ctx.fillStyle = "#666";
+      ctx.lineWidth = 1;
+      ctx.font = "12px sans-serif";
+
+      for (let level = 1; level <= 5; level++) {
+        const r = radius * (level / 5);
+        drawPolygon(ctx, cx, cy, r, false);
+      }
+
+      ABILITY_KEYS.forEach((key, index) => {
+        const angle = getAngle(index);
+        const x = cx + Math.cos(angle) * radius;
+        const y = cy + Math.sin(angle) * radius;
+
+        ctx.beginPath();
+        ctx.moveTo(cx, cy);
+        ctx.lineTo(x, y);
+        ctx.stroke();
+
+        const labelX = cx + Math.cos(angle) * (radius + 30);
+        const labelY = cy + Math.sin(angle) * (radius + 30);
+        ctx.textAlign = labelX < cx - 10 ? "right" : labelX > cx + 10 ? "left" : "center";
+        ctx.textBaseline = labelY < cy ? "bottom" : "top";
+        ctx.fillText(key, labelX, labelY);
+      });
+    }
+
+    function drawPolygon(ctx, cx, cy, r, fill) {
+      ctx.beginPath();
+
+      ABILITY_KEYS.forEach((_, index) => {
+        const angle = getAngle(index);
+        const x = cx + Math.cos(angle) * r;
+        const y = cy + Math.sin(angle) * r;
+
+        if (index === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      });
+
+      ctx.closePath();
+
+      if (fill) ctx.fill();
+      ctx.stroke();
+    }
+
+    function drawRadarLine(ctx, cx, cy, radius, values, color) {
+      ctx.beginPath();
+
+      values.forEach((value, index) => {
+        const safeValue = Math.max(0, Math.min(100, value));
+        const r = radius * (safeValue / 100);
+        const angle = getAngle(index);
+        const x = cx + Math.cos(angle) * r;
+        const y = cy + Math.sin(angle) * r;
+
+        if (index === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      });
+
+      ctx.closePath();
+
+      const rgb = hexToRgb(color) || { r: 153, g: 153, b: 153 };
+      ctx.fillStyle = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.14)`;
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 2;
+      ctx.fill();
+      ctx.stroke();
+
+      values.forEach((value, index) => {
+        const safeValue = Math.max(0, Math.min(100, value));
+        const r = radius * (safeValue / 100);
+        const angle = getAngle(index);
+        const x = cx + Math.cos(angle) * r;
+        const y = cy + Math.sin(angle) * r;
+
+        ctx.beginPath();
+        ctx.arc(x, y, 3, 0, Math.PI * 2);
+        ctx.fillStyle = color;
+        ctx.fill();
+      });
+    }
+
+    function drawLegend(ctx, character, color, index) {
+      const x = 24;
+      const y = 24 + index * 22;
+
+      ctx.fillStyle = color;
+      ctx.fillRect(x, y - 10, 12, 12);
+
+      ctx.fillStyle = "#222";
+      ctx.font = "13px sans-serif";
+      ctx.textAlign = "left";
+      ctx.textBaseline = "middle";
+      ctx.fillText(character.name || "名前未設定", x + 18, y - 4);
+    }
+
+    function getAngle(index) {
+      return -Math.PI / 2 + (Math.PI * 2 * index / ABILITY_KEYS.length);
+    }
+
+    function renderStatsTable() {
+      const wrap = document.getElementById("statsTableWrap");
+
+      if (localCharacters.length === 0) {
+        wrap.innerHTML = `<div class="note">キャラクターがありません。</div>`;
+        return;
+      }
+
+      const header = `
+        <thead>
+          <tr>
+            <th class="sticky-col">項目</th>
+            ${localCharacters.map(character => {
+              const color = normalizeColorForDisplay(character.imageColor);
+              const emoji = character.emoji || "👤";
+              return `
+                <th class="character-col">
+                  <span style="color:${color};font-weight:bold;">${escapeHtml(character.name || "名前未設定")}</span>
+                  <span style="margin-left:4px;">${escapeHtml(emoji)}</span>
+                </th>
+              `;
+            }).join("")}
+          </tr>
+        </thead>
+      `;
+
+      const rows = STAT_GROUPS.map(group => {
+        const groupRow = `
+          <tr class="group-row">
+            <th class="sticky-col">${escapeHtml(group.title)}</th>
+            ${localCharacters.map(() => `<td></td>`).join("")}
+          </tr>
+        `;
+
+        const keyRows = group.keys.map(key => `
+          <tr>
+            <th class="sticky-col">${escapeHtml(key)}</th>
+            ${localCharacters.map(character => {
+              const stats = statsMap[character.id] || {};
+              return `<td>${escapeHtml(stats[key] || "—")}</td>`;
+            }).join("")}
+          </tr>
+        `).join("");
+
+        return groupRow + keyRows;
+      }).join("");
+
+      wrap.innerHTML = `
+        <table>
+          ${header}
+          <tbody>${rows}</tbody>
+        </table>
+      `;
+    }
+
+    function numberOrZero(value) {
+      const number = Number(value);
+      return Number.isFinite(number) ? number : 0;
+    }
+
+    function normalizeColorForDisplay(color) {
+      if (!color) return "#999999";
+      const text = String(color).trim();
+
+      if (/^#[0-9A-Fa-f]{6}$/.test(text)) {
+        return text;
+      }
+
+      return "#999999";
+    }
+
+    function hexToRgb(hex) {
+      const match = String(hex).match(/^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i);
+
+      if (!match) return null;
+
+      return {
+        r: parseInt(match[1], 16),
+        g: parseInt(match[2], 16),
+        b: parseInt(match[3], 16)
+      };
+    }
+
+    function escapeHtml(text) {
+      if (!text) return "";
+      return String(text)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    function escapeAttribute(text) {
+      return escapeHtml(text).replaceAll("`", "&#096;");
+    }
+
+    applySettings();
+    loadData();
+  </script>
+</body>
+</html>
