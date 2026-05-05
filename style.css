@@ -1823,3 +1823,123 @@ button{
     grid-template-columns:1fr !important;
   }
 }
+
+
+/* v1.20 timeline mobile vertical view */
+.timeline-mobile-list{
+  display:none;
+}
+.timeline-mobile-empty{
+  padding:16px;
+  background:rgba(255,255,255,.78);
+  border:1px solid rgba(210,216,230,.9);
+  border-radius:16px;
+  color:var(--muted);
+}
+@media screen and (max-width:800px){
+  /* On phones, hide horizontal spreadsheet and show vertical timeline */
+  #timelineShell{
+    display:none !important;
+  }
+  .timeline-mobile-list{
+    display:grid !important;
+    gap:14px !important;
+  }
+  .timeline-mobile-year{
+    background:rgba(255,255,255,.72);
+    border:1px solid rgba(255,255,255,.88);
+    border-radius:18px;
+    box-shadow:0 12px 30px rgba(70,80,120,.10);
+    overflow:hidden;
+  }
+  .timeline-mobile-year-title{
+    position:sticky;
+    top:112px;
+    z-index:2;
+    padding:10px 14px;
+    background:rgba(238,243,251,.96);
+    border-bottom:1px solid rgba(215,222,234,.9);
+    font-weight:900;
+    font-size:16px;
+  }
+  .timeline-mobile-year-cards{
+    display:grid;
+    gap:8px;
+    padding:10px;
+  }
+  .timeline-mobile-card{
+    --c:#999;
+    border:1px solid rgba(215,222,234,.92);
+    border-left:5px solid var(--c);
+    background:rgba(255,255,255,.92);
+    border-radius:14px;
+    padding:10px;
+  }
+  .timeline-mobile-card.is-unborn{
+    opacity:.48;
+  }
+  .timeline-mobile-card-head{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    margin-bottom:8px;
+  }
+  .timeline-mobile-face{
+    width:30px;
+    height:30px;
+    border-radius:10px;
+    background:var(--c);
+    display:grid;
+    place-items:center;
+    overflow:hidden;
+    flex:0 0 auto;
+    border:1px solid rgba(255,255,255,.9);
+  }
+  .timeline-mobile-face img{
+    width:100%;
+    height:100%;
+    object-fit:contain;
+    display:block;
+  }
+  .timeline-mobile-card-head b{
+    display:block;
+    font-size:14px;
+    line-height:1.25;
+  }
+  .timeline-mobile-card-head span{
+    display:block;
+    color:var(--muted);
+    font-size:12px;
+    margin-top:2px;
+  }
+  .timeline-mobile-card textarea{
+    width:100%;
+    min-height:74px !important;
+    resize:vertical;
+    border:1px solid rgba(215,222,234,.92);
+    border-radius:10px;
+    background:#fff;
+    font-size:16px !important;
+    line-height:1.55;
+    padding:10px !important;
+  }
+
+  /* make filter easier to use above vertical list */
+  .timeline-filter-list{
+    display:grid !important;
+    grid-template-columns:1fr 1fr;
+    gap:8px !important;
+  }
+  .timeline-filter-chip{
+    border-radius:14px !important;
+    justify-content:flex-start;
+  }
+}
+@media screen and (max-width:430px){
+  .timeline-filter-list{
+    grid-template-columns:1fr !important;
+  }
+  .timeline-mobile-year-title{
+    top:106px;
+  }
+}

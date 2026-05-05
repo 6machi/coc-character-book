@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>時系列</title>
-  <link rel="stylesheet" href="./style.css?v=119">
+  <link rel="stylesheet" href="./style.css?v=120">
   <style>
     .timeline-panel {
       padding: 18px;
@@ -295,6 +295,8 @@
     <section class="timeline-shell" id="timelineShell">
       <table id="timelineTable"></table>
     </section>
+
+    <section class="timeline-mobile-list" id="timelineMobileList"></section>
   </main>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -387,6 +389,7 @@
             </tr>
           </tbody>
         `;
+        document.getElementById("timelineMobileList").innerHTML = '<div class="timeline-mobile-empty">年齢が登録されているキャラクターがまだいません。</div>';
         return;
       }
 
@@ -398,6 +401,7 @@
             </tr>
           </tbody>
         `;
+        document.getElementById("timelineMobileList").innerHTML = '<div class="timeline-mobile-empty">表示するキャラクターを選択してください。</div>';
         return;
       }
 
@@ -423,6 +427,7 @@
       `;
 
       table.innerHTML = head + body;
+      renderMobileTimeline(yearList, visibleCharacters);
     }
 
     function renderCharacterRow(character, yearList) {
@@ -485,6 +490,7 @@
     async function saveTimeline() {
       document.getElementById("message").textContent = "保存中...";
 
+      collectMobileTimelineEntries();
       const rows = collectTimelineEntries();
 
       if (rows.length === 0) {
@@ -557,6 +563,56 @@
       selectedTimelineCharacters = new Set();
       renderTimelineFilter();
       renderTimelineTable();
+    }
+
+
+    function renderMobileTimeline(yearList, visibleCharacters) {
+      const box = document.getElementById("timelineMobileList");
+      if(!box) return;
+
+      box.innerHTML = yearList.map(year => {
+        const cards = visibleCharacters.map(character => {
+          const color = col(character.image_color);
+          const age = character.currentAge - year;
+          const isUnborn = age < 0;
+          const ageLabel = isUnborn ? "未出生" : `${age}歳`;
+          const text = timelineEntries?.[character.id]?.[year] || "";
+          const face = character.icon_url
+            ? `<span class="timeline-mobile-face" style="--c:${color};"><img src="${e(character.icon_url)}" alt="icon"></span>`
+            : `<span class="timeline-mobile-face" style="--c:${color};">${e(character.emoji || "👤")}</span>`;
+
+          return `
+            <div class="timeline-mobile-card ${isUnborn ? "is-unborn" : ""}" style="--c:${color};" data-character="${character.id}" data-years-ago="${year}">
+              <div class="timeline-mobile-card-head">
+                ${face}
+                <div>
+                  <b>${e(character.name || "名前未設定")}</b>
+                  <span>${ageLabel}</span>
+                </div>
+              </div>
+              <textarea placeholder="${isUnborn ? "未出生" : "この時期の出来事"}">${e(text)}</textarea>
+            </div>
+          `;
+        }).join("");
+
+        return `
+          <div class="timeline-mobile-year">
+            <div class="timeline-mobile-year-title">${year}年前</div>
+            <div class="timeline-mobile-year-cards">${cards}</div>
+          </div>
+        `;
+      }).join("");
+    }
+
+    function collectMobileTimelineEntries(){
+      document.querySelectorAll(".timeline-mobile-card").forEach(card => {
+        const characterId = card.dataset.character;
+        const yearsAgo = Number(card.dataset.yearsAgo);
+        const text = card.querySelector("textarea").value.trim();
+
+        if(!timelineEntries[characterId]) timelineEntries[characterId] = {};
+        timelineEntries[characterId][yearsAgo] = text;
+      });
     }
 
 loadTimeline().catch(error => {
