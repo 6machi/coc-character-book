@@ -1,0 +1,748 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>相関図</title>
+  <link rel="stylesheet" href="./style.css">
+  <style>
+    .relationship-panel{padding:18px}
+    .relationship-toolbar{
+      display:grid;
+      grid-template-columns:1.2fr 1.2fr .8fr 1.4fr auto auto;
+      gap:10px;
+      align-items:end;
+      margin-top:14px;
+    }
+    .relationship-toolbar.secondary-row{
+      grid-template-columns:auto auto auto 1fr;
+      margin-top:10px;
+    }
+    .relationship-toolbar label{
+      display:block;
+      color:var(--sub);
+      font-size:12px;
+      font-weight:bold;
+      margin-bottom:5px;
+    }
+    .relationship-message{color:var(--muted);font-size:13px}
+    .relationship-canvas{
+      position:relative;
+      height:690px;
+      overflow:hidden;
+      border:1px solid var(--line);
+      border-radius:18px;
+      background:
+        linear-gradient(rgba(80,90,120,.045) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(80,90,120,.045) 1px, transparent 1px),
+        rgba(255,255,255,.58);
+      background-size:28px 28px;
+      box-shadow:var(--glass-shadow-soft);
+    }
+    #relationshipSvg{
+      position:absolute;
+      inset:0;
+      width:100%;
+      height:100%;
+      z-index:1;
+      pointer-events:none;
+    }
+    .relationship-node{
+      --c:#999;
+      position:absolute;
+      z-index:2;
+      width:148px;
+      min-height:70px;
+      padding:10px;
+      border-radius:16px;
+      background:rgba(255,255,255,.9);
+      border:1px solid rgba(255,255,255,.95);
+      border-left:6px solid var(--c);
+      box-shadow:0 14px 28px rgba(70,80,120,.16);
+      cursor:grab;
+      user-select:none;
+    }
+    .relationship-node:active{cursor:grabbing}
+    .relationship-node.selected{outline:3px solid color-mix(in srgb,var(--c) 28%,#c9d5ee)}
+    .relationship-node-top{
+      display:flex;
+      align-items:center;
+      gap:8px;
+    }
+    .relationship-face{
+      width:34px;
+      height:34px;
+      flex:0 0 auto;
+      display:grid;
+      place-items:center;
+      border-radius:10px;
+      background:var(--c);
+      border:1px solid rgba(255,255,255,.9);
+      font-size:18px;
+      overflow:hidden;
+    }
+    .relationship-face img{
+      width:100%;
+      height:100%;
+      object-fit:contain;
+      display:block;
+    }
+    .relationship-node-name{
+      font-weight:900;
+      font-size:13px;
+      line-height:1.35;
+    }
+    .relationship-node-sub{
+      color:var(--muted);
+      font-size:10px;
+      margin-top:2px;
+    }
+    .relationship-label{
+      position:absolute;
+      z-index:3;
+      transform:translate(-50%,-50%);
+      padding:4px 7px;
+      border-radius:999px;
+      background:rgba(255,255,255,.92);
+      border:1px solid rgba(210,216,230,.95);
+      color:#4d5567;
+      font-size:11px;
+      white-space:nowrap;
+      box-shadow:0 8px 18px rgba(70,80,120,.12);
+      cursor:pointer;
+    }
+    .relationship-label.has-detail::after{
+      content:"";
+      display:inline-block;
+      width:5px;
+      height:5px;
+      margin-left:5px;
+      border-radius:999px;
+      background:#9da4ae;
+      vertical-align:middle;
+    }
+    .relationship-detail-pop{
+      position:absolute;
+      z-index:10;
+      transform:translate(-50%,calc(-100% - 12px));
+      width:240px;
+      max-width:calc(100vw - 32px);
+      padding:10px 11px;
+      border-radius:12px;
+      background:rgba(255,255,255,.97);
+      border:1px solid rgba(210,216,230,.95);
+      box-shadow:0 18px 40px rgba(70,80,120,.18);
+      color:#353b49;
+      font-size:12px;
+      line-height:1.7;
+      white-space:pre-wrap;
+      pointer-events:none;
+      opacity:0;
+      transition:.14s ease;
+    }
+    .relationship-detail-pop.show{opacity:1}
+    .relationship-side{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:14px;
+    }
+    .relationship-list{
+      display:grid;
+      gap:8px;
+      max-height:250px;
+      overflow:auto;
+    }
+    .relationship-list-item{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:8px;
+      padding:8px 10px;
+      border-radius:12px;
+      background:rgba(255,255,255,.62);
+      border:1px solid rgba(255,255,255,.85);
+      font-size:12px;
+    }
+    .relationship-mini{display:flex;align-items:center;gap:7px}
+    .relationship-dot{
+      width:18px;
+      height:18px;
+      border-radius:6px;
+      background:var(--c);
+      display:grid;
+      place-items:center;
+      font-size:11px;
+      overflow:hidden;
+    }
+    .relationship-dot img{
+      width:100%;
+      height:100%;
+      object-fit:contain;
+      display:block;
+    }
+    .relationship-small-btn{
+      padding:5px 8px;
+      font-size:11px;
+      border-radius:7px;
+      box-shadow:none;
+      margin:0;
+    }
+    .relationship-dialog{
+      width:min(520px,calc(100% - 28px));
+      border:1px solid rgba(210,216,230,.95);
+      border-radius:18px;
+      padding:0;
+      background:rgba(255,255,255,.96);
+      box-shadow:0 24px 70px rgba(40,48,72,.24);
+      color:var(--text);
+    }
+    .relationship-dialog::backdrop{
+      background:rgba(30,34,48,.25);
+      backdrop-filter:blur(4px);
+    }
+    .relationship-dialog-body{padding:18px}
+    .relationship-dialog-grid{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:10px;
+      margin-top:12px;
+    }
+    .relationship-dialog-full{grid-column:1/-1}
+    .relationship-dialog-actions{
+      display:flex;
+      justify-content:flex-end;
+      gap:8px;
+      margin-top:14px;
+    }
+    @media(max-width:900px){
+      .relationship-toolbar,
+      .relationship-toolbar.secondary-row{grid-template-columns:1fr 1fr}
+      .relationship-toolbar button{width:100%}
+      .relationship-side{grid-template-columns:1fr}
+      .relationship-canvas{height:620px}
+      .relationship-node{width:132px}
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="header-inner">
+      <div><h1 class="site-brand">自陣キャラ図鑑</h1></div>
+      <div class="header-buttons">
+        <a class="header-button" href="./index.html">キャラクター</a>
+        <a class="header-button" href="./compare.html">質問</a>
+        <a class="header-button" href="./stats.html">ステータス</a>
+        <a class="header-button" href="./timeline.html">時系列</a>
+        <a class="header-button" href="./relationship.html">相関図</a>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section class="panel relationship-panel">
+      <div class="page-title-row"><h2>相関図</h2><span class="info-wrap"><button class="info-button" type="button" aria-label="相関図の説明"><svg class="info-svg" viewBox="0 0 1200 1200" aria-hidden="true" focusable="false"><path d="M600 20C279.7 20 20 279.7 20 600s259.7 580 580 580 580-259.7 580-580S920.3 20 600 20zm0 70c281.6 0 510 228.4 510 510s-228.4 510-510 510S90 881.6 90 600 318.4 90 600 90z"/><circle cx="600" cy="285" r="100"/><rect x="500" y="430" width="200" height="520" rx="95"/></svg></button><span class="info-pop">相関図<br>キャラクターを自由に配置して、関係線を作成できます。線には短い表示メモと詳細メモを保存できます。詳細メモは線のラベルにカーソルを合わせると表示されます。キャラクターを追加・編集した後は、「読み込み」ボタンで最新情報を反映してください。</span></span></div>
+      <div class="relationship-toolbar">
+        <div>
+          <label for="fromCharacter">本人</label>
+          <select id="fromCharacter"></select>
+        </div>
+        <div>
+          <label for="toCharacter">相手</label>
+          <select id="toCharacter"></select>
+        </div>
+        <div>
+          <label for="relationType">線の種類</label>
+          <select id="relationType">
+            <option value="solid">通常</option>
+            <option value="thick">強調</option>
+            <option value="dashed">点線</option>
+          </select>
+        </div>
+        <div>
+          <label for="relationText">短い表示メモ</label>
+          <input id="relationText" placeholder="例：かわいい / 頼りになる">
+        </div>
+        <button onclick="addRelation()">線を追加</button>
+        <button class="secondary-button" onclick="saveAll()">保存</button>
+      </div>
+
+      <div style="margin-top:10px;">
+        <label for="relationDetail">詳細メモ</label>
+        <textarea id="relationDetail" rows="3" placeholder="例：初対面では怖そうだと思ったけど、話してみると意外と面倒見がいい。"></textarea>
+      </div>
+
+      <div class="relationship-toolbar secondary-row">
+        <button class="secondary-button" onclick="autoArrangeCircle()">円形に並べる</button>
+        <button class="secondary-button" onclick="autoArrangeGrid()">グリッドに並べる</button>
+        <button class="secondary-button" onclick="loadAll()">読み込み</button>
+        <span id="message" class="relationship-message">読み込み中...</span>
+      </div>
+    </section>
+
+    <section class="panel relationship-side">
+      <div>
+        <div class="page-title-row"><h2>キャラクター</h2><span class="info-wrap"><button class="info-button" type="button" aria-label="キャラクターの説明"><svg class="info-svg" viewBox="0 0 1200 1200" aria-hidden="true" focusable="false"><path d="M600 20C279.7 20 20 279.7 20 600s259.7 580 580 580 580-259.7 580-580S920.3 20 600 20zm0 70c281.6 0 510 228.4 510 510s-228.4 510-510 510S90 881.6 90 600 318.4 90 600 90z"/><circle cx="600" cy="285" r="100"/><rect x="500" y="430" width="200" height="520" rx="95"/></svg></button><span class="info-pop">相関図に表示するキャラクター一覧です。「中心にする」を押すと、そのキャラクターを中央にして他のキャラクターを周囲へ配置します。</span></span></div>
+        <div class="relationship-list" id="characterList"></div>
+      </div>
+      <div>
+        <div class="page-title-row"><h2>関係線</h2><span class="info-wrap"><button class="info-button" type="button" aria-label="関係線の説明"><svg class="info-svg" viewBox="0 0 1200 1200" aria-hidden="true" focusable="false"><path d="M600 20C279.7 20 20 279.7 20 600s259.7 580 580 580 580-259.7 580-580S920.3 20 600 20zm0 70c281.6 0 510 228.4 510 510s-228.4 510-510 510S90 881.6 90 600 318.4 90 600 90z"/><circle cx="600" cy="285" r="100"/><rect x="500" y="430" width="200" height="520" rx="95"/></svg></button><span class="info-pop">作成済みの関係線一覧です。編集から、本人・相手・線の種類・短い表示メモ・詳細メモを変更できます。</span></span></div>
+        <div class="relationship-list" id="relationList"></div>
+      </div>
+    </section>
+
+    <section class="relationship-canvas" id="canvas">
+      <svg id="relationshipSvg"></svg>
+      <div id="labels"></div>
+    </section>
+  </main>
+
+  <dialog class="relationship-dialog" id="relationDialog">
+    <div class="relationship-dialog-body">
+      <h2>関係線を編集</h2>
+      <div class="relationship-dialog-grid">
+        <div>
+          <label>本人</label>
+          <select id="editFrom"></select>
+        </div>
+        <div>
+          <label>相手</label>
+          <select id="editTo"></select>
+        </div>
+        <div>
+          <label>線の種類</label>
+          <select id="editType">
+            <option value="solid">通常</option>
+            <option value="thick">強調</option>
+            <option value="dashed">点線</option>
+          </select>
+        </div>
+        <div class="relationship-dialog-full">
+          <label>短い表示メモ</label>
+          <input id="editText">
+        </div>
+        <div class="relationship-dialog-full">
+          <label>詳細メモ</label>
+          <textarea id="editDetail" rows="5"></textarea>
+        </div>
+      </div>
+      <div class="relationship-dialog-actions">
+        <button class="secondary-button" onclick="relationDialog.close()">閉じる</button>
+        <button class="secondary-button" onclick="deleteEditingRelation()">削除</button>
+        <button onclick="saveEditingRelation()">保存</button>
+      </div>
+    </div>
+  </dialog>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="./config.js"></script>
+  <script src="./common.js"></script>
+  <script>
+    let relationshipCharacters = [];
+    let relationshipRelations = [];
+    let relationshipPositions = {};
+    let drag = null;
+    let editingRelationId = null;
+
+    async function loadAll(){
+      document.getElementById("message").textContent = "読み込み中...";
+      const teamData = await team();
+
+      const [charactersResult, relationsResult, positionsResult] = await Promise.all([
+        sb.from("characters").select("id,name,furigana,emoji,icon_url,image_color,created_at").eq("team_id", teamData.id).order("created_at", { ascending:false }),
+        sb.from("relationship_relations").select("*").eq("team_id", teamData.id).order("created_at", { ascending:true }),
+        sb.from("relationship_positions").select("*")
+      ]);
+
+      if(charactersResult.error) throw charactersResult.error;
+      if(relationsResult.error) throw relationsResult.error;
+      if(positionsResult.error) throw positionsResult.error;
+
+      relationshipCharacters = charactersResult.data || [];
+      relationshipRelations = relationsResult.data || [];
+      relationshipPositions = {};
+      (positionsResult.data || []).forEach(p => relationshipPositions[p.character_id] = { x:p.x, y:p.y });
+
+      ensureDefaultPositions();
+      initSelects();
+      renderAll();
+      document.getElementById("message").textContent = "読み込みました";
+    }
+
+    function ensureDefaultPositions(){
+      const existing = relationshipCharacters.filter(c => relationshipPositions[c.id]);
+      if(existing.length === relationshipCharacters.length) return;
+
+      relationshipCharacters.forEach((c, i) => {
+        if(relationshipPositions[c.id]) return;
+        relationshipPositions[c.id] = {
+          x: 90 + (i % 4) * 250,
+          y: 90 + Math.floor(i / 4) * 170
+        };
+      });
+    }
+
+    function character(id){
+      return relationshipCharacters.find(c => c.id === id);
+    }
+
+    function characterColor(c){
+      return col(c?.image_color);
+    }
+
+    function characterFace(c, className="relationship-face"){
+      const color = characterColor(c);
+      if(c?.icon_url) return `<div class="${className}" style="--c:${color}"><img src="${e(c.icon_url)}" alt="icon"></div>`;
+      return `<div class="${className}" style="--c:${color}">${e(c?.emoji || "👤")}</div>`;
+    }
+
+    function initSelects(){
+      const options = relationshipCharacters.map(c => `<option value="${c.id}">${e(c.name || "名前未設定")}</option>`).join("");
+      fromCharacter.innerHTML = options;
+      toCharacter.innerHTML = options;
+      editFrom.innerHTML = options;
+      editTo.innerHTML = options;
+    }
+
+    function renderCharacterList(){
+      if(!relationshipCharacters.length){
+        characterList.innerHTML = '<div class="relationship-list-item">まだキャラクターが登録されていません。</div>';
+        return;
+      }
+
+      characterList.innerHTML = relationshipCharacters.map(c => `
+        <div class="relationship-list-item">
+          <span class="relationship-mini">
+            ${characterFace(c, "relationship-dot")}
+            <span>${e(c.name || "名前未設定")}</span>
+          </span>
+          <button class="secondary-button relationship-small-btn" onclick="arrangeAround('${c.id}')">中心にする</button>
+        </div>
+      `).join("");
+    }
+
+    function renderRelationList(){
+      if(!relationshipRelations.length){
+        relationList.innerHTML = '<div class="relationship-list-item">まだ関係線がありません。</div>';
+        return;
+      }
+
+      relationList.innerHTML = relationshipRelations.map(r => {
+        const from = character(r.from_character_id);
+        const to = character(r.to_character_id);
+        const typeLabel = r.type === "thick" ? "強調" : r.type === "dashed" ? "点線" : "通常";
+        const detailMark = r.detail ? " / 詳細あり" : "";
+        return `
+          <div class="relationship-list-item">
+            <span>${e(from?.name || "?")} → ${e(to?.name || "?")}<br><small>${typeLabel}${detailMark} / ${e(r.label || "関係メモなし")}</small></span>
+            <button class="secondary-button relationship-small-btn" onclick="openRelationEditor('${r.id}')">編集</button>
+          </div>
+        `;
+      }).join("");
+    }
+
+    function renderNodes(){
+      document.querySelectorAll(".relationship-node").forEach(n => n.remove());
+
+      relationshipCharacters.forEach(c => {
+        const pos = relationshipPositions[c.id] || {x:80,y:80};
+        const node = document.createElement("div");
+        node.className = "relationship-node";
+        node.dataset.id = c.id;
+        node.style.setProperty("--c", characterColor(c));
+        node.style.left = pos.x + "px";
+        node.style.top = pos.y + "px";
+        node.innerHTML = `
+          <div class="relationship-node-top">
+            ${characterFace(c)}
+            <div>
+              <div class="relationship-node-name">${e(c.name || "名前未設定")}</div>
+              <div class="relationship-node-sub">${e(c.furigana || "")}</div>
+            </div>
+          </div>
+        `;
+        node.addEventListener("pointerdown", startDrag);
+        canvas.appendChild(node);
+      });
+    }
+
+    function startDrag(event){
+      const node = event.currentTarget;
+      node.setPointerCapture(event.pointerId);
+      const rect = node.getBoundingClientRect();
+      const canvasRect = canvas.getBoundingClientRect();
+
+      drag = {
+        node,
+        id: node.dataset.id,
+        dx: event.clientX - rect.left,
+        dy: event.clientY - rect.top,
+        canvasLeft: canvasRect.left,
+        canvasTop: canvasRect.top
+      };
+
+      document.querySelectorAll(".relationship-node").forEach(n => n.classList.remove("selected"));
+      node.classList.add("selected");
+      node.addEventListener("pointermove", moveDrag);
+      node.addEventListener("pointerup", endDrag);
+    }
+
+    function moveDrag(event){
+      if(!drag) return;
+      const x = event.clientX - drag.canvasLeft - drag.dx + canvas.scrollLeft;
+      const y = event.clientY - drag.canvasTop - drag.dy + canvas.scrollTop;
+      relationshipPositions[drag.id] = {
+        x: Math.max(8, Math.min(x, canvas.clientWidth - 160)),
+        y: Math.max(8, Math.min(y, canvas.clientHeight - 90))
+      };
+      drag.node.style.left = relationshipPositions[drag.id].x + "px";
+      drag.node.style.top = relationshipPositions[drag.id].y + "px";
+      renderRelations();
+    }
+
+    function endDrag(event){
+      if(!drag) return;
+      drag.node.removeEventListener("pointermove", moveDrag);
+      drag.node.removeEventListener("pointerup", endDrag);
+      drag = null;
+      message.textContent = "配置を変更しました。保存できます。";
+    }
+
+    function nodeCenter(id){
+      const pos = relationshipPositions[id] || {x:0,y:0};
+      return { x: pos.x + 74, y: pos.y + 38 };
+    }
+
+    function renderRelations(){
+      const svg = document.getElementById("relationshipSvg");
+      const labels = document.getElementById("labels");
+      svg.innerHTML = "";
+      labels.innerHTML = "";
+
+      const relationCounts = {};
+      relationshipRelations.forEach(r => {
+        const pairKey = [r.from_character_id, r.to_character_id].sort().join("__");
+        if(!relationCounts[pairKey]) relationCounts[pairKey] = [];
+        relationCounts[pairKey].push(r.id);
+      });
+
+      relationshipRelations.forEach(r => {
+        const from = nodeCenter(r.from_character_id);
+        const to = nodeCenter(r.to_character_id);
+        const fromChar = character(r.from_character_id);
+        const color = characterColor(fromChar);
+
+        const pairKey = [r.from_character_id, r.to_character_id].sort().join("__");
+        const siblings = relationCounts[pairKey] || [r.id];
+        const siblingIndex = siblings.indexOf(r.id);
+        const siblingCount = siblings.length;
+
+        const dx = to.x - from.x;
+        const dy = to.y - from.y;
+        const distance = Math.max(Math.sqrt(dx * dx + dy * dy), 1);
+        const nx = -dy / distance;
+        const ny = dx / distance;
+
+        let offset = 0;
+        if(siblingCount > 1){
+          const center = (siblingCount - 1) / 2;
+          offset = (siblingIndex - center) * 42;
+          if(r.from_character_id > r.to_character_id) offset *= -1;
+        }
+
+        const sx = from.x + nx * offset;
+        const sy = from.y + ny * offset;
+        const tx = to.x + nx * offset;
+        const ty = to.y + ny * offset;
+        const midX = (from.x + to.x) / 2 + nx * offset;
+        const midY = (from.y + to.y) / 2 + ny * offset;
+
+        const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+        path.setAttribute("d", `M ${sx} ${sy} Q ${midX} ${midY} ${tx} ${ty}`);
+        path.setAttribute("fill", "none");
+        path.setAttribute("stroke", color);
+        path.setAttribute("stroke-width", r.type === "thick" ? "4" : "2.2");
+        path.setAttribute("stroke-linecap", "round");
+        if(r.type === "dashed") path.setAttribute("stroke-dasharray", "8 7");
+        svg.appendChild(path);
+
+        const label = document.createElement("div");
+        label.className = "relationship-label" + (r.detail ? " has-detail" : "");
+        label.style.left = midX + "px";
+        label.style.top = (midY + 6) + "px";
+        label.textContent = r.label || typeName(r.type);
+        label.title = "クリックで編集";
+        label.addEventListener("click", () => openRelationEditor(r.id));
+        labels.appendChild(label);
+
+        if(r.detail){
+          const detail = document.createElement("div");
+          detail.className = "relationship-detail-pop";
+          detail.style.left = midX + "px";
+          detail.style.top = (midY - 8) + "px";
+          detail.textContent = r.detail;
+          labels.appendChild(detail);
+          label.addEventListener("mouseenter", () => detail.classList.add("show"));
+          label.addEventListener("mouseleave", () => detail.classList.remove("show"));
+          label.addEventListener("focus", () => detail.classList.add("show"));
+          label.addEventListener("blur", () => detail.classList.remove("show"));
+        }
+      });
+    }
+
+    function typeName(type){
+      if(type === "thick") return "強調";
+      if(type === "dashed") return "点線";
+      return "通常";
+    }
+
+    async function addRelation(){
+      if(fromCharacter.value === toCharacter.value){
+        alert("同じキャラ同士の線は今回は作らない設定です");
+        return;
+      }
+      const teamData = await team();
+      const payload = {
+        team_id: teamData.id,
+        from_character_id: fromCharacter.value,
+        to_character_id: toCharacter.value,
+        type: relationType.value,
+        label: relationText.value.trim(),
+        detail: relationDetail.value.trim()
+      };
+      const result = await sb.from("relationship_relations").insert(payload).select("*").single();
+      if(result.error){
+        message.textContent = "追加に失敗しました：" + result.error.message;
+        return;
+      }
+      relationshipRelations.push(result.data);
+      relationText.value = "";
+      relationDetail.value = "";
+      renderAll();
+      message.textContent = "関係線を追加しました。";
+    }
+
+    function openRelationEditor(id){
+      const relation = relationshipRelations.find(r => r.id === id);
+      if(!relation) return;
+      editingRelationId = id;
+      editFrom.value = relation.from_character_id;
+      editTo.value = relation.to_character_id;
+      editType.value = relation.type || "solid";
+      editText.value = relation.label || "";
+      editDetail.value = relation.detail || "";
+      relationDialog.showModal();
+    }
+
+    async function saveEditingRelation(){
+      const relation = relationshipRelations.find(r => r.id === editingRelationId);
+      if(!relation) return;
+      if(editFrom.value === editTo.value){
+        alert("同じキャラ同士の線は今回は作らない設定です");
+        return;
+      }
+
+      const payload = {
+        from_character_id: editFrom.value,
+        to_character_id: editTo.value,
+        type: editType.value,
+        label: editText.value.trim(),
+        detail: editDetail.value.trim(),
+        updated_at: new Date().toISOString()
+      };
+
+      const result = await sb.from("relationship_relations").update(payload).eq("id", editingRelationId).select("*").single();
+      if(result.error){
+        message.textContent = "編集に失敗しました：" + result.error.message;
+        return;
+      }
+
+      Object.assign(relation, result.data);
+      relationDialog.close();
+      editingRelationId = null;
+      renderAll();
+      message.textContent = "関係線を編集しました。";
+    }
+
+    async function deleteEditingRelation(){
+      if(!editingRelationId) return;
+      if(!confirm("この関係線を削除しますか？")) return;
+      const result = await sb.from("relationship_relations").delete().eq("id", editingRelationId);
+      if(result.error){
+        message.textContent = "削除に失敗しました：" + result.error.message;
+        return;
+      }
+      relationshipRelations = relationshipRelations.filter(r => r.id !== editingRelationId);
+      relationDialog.close();
+      editingRelationId = null;
+      renderAll();
+      message.textContent = "関係線を削除しました。";
+    }
+
+    async function saveAll(){
+      const rows = Object.entries(relationshipPositions).map(([character_id, pos]) => ({
+        character_id,
+        x: Math.round(pos.x),
+        y: Math.round(pos.y),
+        updated_at: new Date().toISOString()
+      }));
+
+      const result = await sb.from("relationship_positions").upsert(rows, { onConflict:"character_id" });
+      if(result.error){
+        message.textContent = "保存に失敗しました：" + result.error.message;
+        return;
+      }
+      message.textContent = "配置を保存しました";
+    }
+
+    function arrangeAround(centerId){
+      const centerX = canvas.clientWidth / 2 - 74;
+      const centerY = canvas.clientHeight / 2 - 37;
+      const radiusX = Math.min(360, canvas.clientWidth / 2 - 140);
+      const radiusY = Math.min(220, canvas.clientHeight / 2 - 110);
+      relationshipPositions[centerId] = { x:centerX, y:centerY };
+      const others = relationshipCharacters.filter(c => c.id !== centerId);
+      others.forEach((c, i) => {
+        const angle = -Math.PI / 2 + (Math.PI * 2 * i / others.length);
+        relationshipPositions[c.id] = {
+          x: centerX + Math.cos(angle) * radiusX,
+          y: centerY + Math.sin(angle) * radiusY
+        };
+      });
+      renderAll();
+      message.textContent = (character(centerId)?.name || "選択キャラ") + "を中心に配置しました。保存できます。";
+    }
+
+    function autoArrangeCircle(){
+      const centerX = canvas.clientWidth / 2 - 74;
+      const centerY = canvas.clientHeight / 2 - 37;
+      const radiusX = Math.min(390, canvas.clientWidth / 2 - 140);
+      const radiusY = Math.min(230, canvas.clientHeight / 2 - 110);
+      relationshipCharacters.forEach((c, i) => {
+        const angle = -Math.PI / 2 + (Math.PI * 2 * i / relationshipCharacters.length);
+        relationshipPositions[c.id] = { x:centerX + Math.cos(angle) * radiusX, y:centerY + Math.sin(angle) * radiusY };
+      });
+      renderAll();
+      message.textContent = "円形に並べました。保存できます。";
+    }
+
+    function autoArrangeGrid(){
+      relationshipCharacters.forEach((c, i) => {
+        relationshipPositions[c.id] = { x:90 + (i % 4) * 250, y:90 + Math.floor(i / 4) * 170 };
+      });
+      renderAll();
+      message.textContent = "グリッドに並べました。保存できます。";
+    }
+
+    function renderAll(){
+      renderCharacterList();
+      renderRelationList();
+      renderNodes();
+      renderRelations();
+    }
+
+    loadAll().catch(error => {
+      console.error(error);
+      document.getElementById("message").textContent = "読み込みに失敗しました：" + error.message;
+    });
+  </script>
+</body>
+</html>
