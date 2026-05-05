@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>時系列</title>
-  <link rel="stylesheet" href="./style.css?v=120">
+  <link rel="stylesheet" href="./style.css?v=122">
   <style>
     .timeline-panel {
       padding: 18px;
@@ -535,7 +535,7 @@
         const checked = selectedTimelineCharacters.has(character.id) ? "checked" : "";
         const face = character.icon_url
           ? `<span class="timeline-filter-face" style="--c:${color};"><img src="${e(character.icon_url)}" alt="icon"></span>`
-          : `<span class="timeline-filter-face" style="--c:${color};">${e(character.emoji || "👤")}</span>`;
+          : `<span class="timeline-filter-face" style="--c:${color};">${e(firstEmoji(character.emoji))}</span>`;
 
         return `
           <label class="timeline-filter-chip" style="--c:${color};">
@@ -579,7 +579,7 @@
           const text = timelineEntries?.[character.id]?.[year] || "";
           const face = character.icon_url
             ? `<span class="timeline-mobile-face" style="--c:${color};"><img src="${e(character.icon_url)}" alt="icon"></span>`
-            : `<span class="timeline-mobile-face" style="--c:${color};">${e(character.emoji || "👤")}</span>`;
+            : `<span class="timeline-mobile-face" style="--c:${color};">${e(firstEmoji(character.emoji))}</span>`;
 
           return `
             <div class="timeline-mobile-card ${isUnborn ? "is-unborn" : ""}" style="--c:${color};" data-character="${character.id}" data-years-ago="${year}">

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>相関図</title>
-  <link rel="stylesheet" href="./style.css?v=120">
+  <link rel="stylesheet" href="./style.css?v=122">
   <style>
     .relationship-panel{padding:18px}
     .relationship-toolbar{
@@ -392,7 +392,7 @@
     function characterFace(c, className="relationship-face"){
       const color = characterColor(c);
       if(c?.icon_url) return `<div class="${className}" style="--c:${color}"><img src="${e(c.icon_url)}" alt="icon"></div>`;
-      return `<div class="${className}" style="--c:${color}">${e(c?.emoji || "👤")}</div>`;
+      return `<div class="${className}" style="--c:${color}">${e(firstEmoji(c?.emoji))}</div>`;
     }
 
     function initSelects(){
