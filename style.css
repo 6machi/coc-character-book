@@ -1242,3 +1242,430 @@ dialog .modal-body{
     padding-right:190px !important;
   }
 }
+
+/* v1.17 mobile usability */
+html{
+  -webkit-text-size-adjust:100%;
+}
+
+/* general tap comfort */
+button,
+.header-button,
+.secondary-button,
+.link-button,
+.info-button,
+input,
+select,
+textarea{
+  touch-action:manipulation;
+}
+
+/* keep desktop mostly the same, but improve click targets slightly */
+.header-button,
+.secondary-button,
+.link-button{
+  min-height:42px;
+}
+button{
+  min-height:42px;
+}
+
+/* mobile layout */
+@media(max-width:800px){
+  body{
+    font-size:16px;
+  }
+
+  header{
+    position:sticky !important;
+    top:0;
+    padding:12px 12px 10px !important;
+  }
+
+  .header-inner{
+    display:block !important;
+  }
+
+  .site-brand{
+    font-size:22px !important;
+    line-height:1.2;
+    margin-bottom:10px !important;
+  }
+
+  .header-buttons{
+    display:flex !important;
+    gap:8px !important;
+    flex-wrap:nowrap !important;
+    overflow-x:auto !important;
+    -webkit-overflow-scrolling:touch;
+    padding-bottom:4px;
+    justify-content:flex-start !important;
+  }
+
+  .header-buttons::-webkit-scrollbar{
+    display:none;
+  }
+
+  .header-button{
+    flex:0 0 auto;
+    min-height:44px !important;
+    padding:11px 15px !important;
+    font-size:14px !important;
+    border-radius:999px !important;
+    white-space:nowrap;
+  }
+
+  main{
+    padding:12px !important;
+  }
+
+  .panel{
+    padding:16px !important;
+    border-radius:18px !important;
+    margin-bottom:14px !important;
+  }
+
+  .page-title-row{
+    gap:7px !important;
+    margin-bottom:12px !important;
+  }
+
+  .page-title-row h2,
+  .panel h2{
+    font-size:20px !important;
+    line-height:1.3;
+  }
+
+  .info-button{
+    width:22px !important;
+    height:22px !important;
+  }
+
+  .info-svg{
+    width:20px !important;
+    height:20px !important;
+  }
+
+  .info-floating{
+    left:12px !important;
+    right:12px !important;
+    top:76px !important;
+    width:auto !important;
+    max-height:70vh !important;
+    padding:16px !important;
+    font-size:14px !important;
+    line-height:1.8 !important;
+  }
+
+  button,
+  .secondary-button,
+  .link-button{
+    min-height:46px !important;
+    padding:12px 16px !important;
+    font-size:15px !important;
+  }
+
+  input,
+  select,
+  textarea{
+    min-height:46px !important;
+    font-size:16px !important; /* prevents iOS zoom */
+    padding:12px !important;
+  }
+
+  label{
+    font-size:13px !important;
+    margin-bottom:6px !important;
+  }
+
+  .character-list{
+    grid-template-columns:1fr !important;
+    gap:12px !important;
+  }
+
+  .card{
+    padding:15px !important;
+    border-radius:18px !important;
+  }
+
+  .avatar,
+  .avatar-emoji{
+    width:58px !important;
+    height:58px !important;
+    border-radius:16px !important;
+  }
+
+  .name{
+    font-size:18px !important;
+  }
+
+  .sub{
+    font-size:13px !important;
+  }
+
+  details summary{
+    min-height:44px;
+    display:flex;
+    align-items:center;
+  }
+
+  .form-grid{
+    grid-template-columns:1fr !important;
+    gap:12px !important;
+  }
+
+  .color-row,
+  .birthday-row{
+    grid-template-columns:1fr !important;
+  }
+
+  .detail-grid{
+    grid-template-columns:1fr !important;
+  }
+
+  /* modal: large mobile-safe close, edit/delete inside */
+  dialog{
+    width:calc(100vw - 18px) !important;
+    max-height:88vh !important;
+    border-radius:20px !important;
+  }
+
+  dialog .modal-body{
+    max-height:64vh !important;
+    overflow:auto !important;
+    padding:16px !important;
+  }
+
+  .modal-header{
+    padding:18px 16px 74px 16px !important;
+  }
+
+  .modal-header-inner{
+    align-items:flex-start !important;
+  }
+
+  .modal-x{
+    width:44px !important;
+    height:44px !important;
+    top:-14px !important;
+    right:-4px !important;
+    font-size:23px !important;
+  }
+
+  .modal-edit-top,
+  .modal-delete-top{
+    top:calc(100% - 62px) !important;
+    min-height:42px !important;
+    padding:10px 14px !important;
+    font-size:14px !important;
+  }
+
+  .modal-edit-top{
+    right:16px !important;
+  }
+
+  .modal-delete-top{
+    right:82px !important;
+  }
+
+  .modal-footer{
+    display:none !important;
+  }
+
+  /* tables */
+  .table-wrap,
+  .timeline-shell,
+  .relationship-canvas{
+    -webkit-overflow-scrolling:touch;
+  }
+
+  th,td{
+    font-size:13px !important;
+  }
+
+  .sticky-col{
+    min-width:140px !important;
+    max-width:140px !important;
+    width:140px !important;
+  }
+
+  .character-col{
+    min-width:125px !important;
+    max-width:125px !important;
+    width:125px !important;
+  }
+
+  /* timeline controls and filters */
+  .timeline-toolbar{
+    display:grid !important;
+    grid-template-columns:1fr 1fr !important;
+    gap:8px !important;
+  }
+
+  .timeline-toolbar button{
+    width:100% !important;
+    min-height:46px !important;
+    margin:0 !important;
+  }
+
+  .timeline-message{
+    grid-column:1/-1;
+    font-size:13px !important;
+  }
+
+  .timeline-filter-actions{
+    display:grid !important;
+    grid-template-columns:1fr 1fr !important;
+    gap:8px !important;
+  }
+
+  .timeline-filter-actions button{
+    width:100% !important;
+    margin:0 !important;
+  }
+
+  .timeline-filter-chip{
+    min-height:42px !important;
+    padding:8px 11px !important;
+    font-size:13px !important;
+  }
+
+  .timeline-filter-face{
+    width:24px !important;
+    height:24px !important;
+  }
+
+  .timeline-corner,
+  .timeline-char-col{
+    min-width:148px !important;
+    width:148px !important;
+  }
+
+  .timeline-cell,
+  .timeline-year-head{
+    min-width:136px !important;
+    width:136px !important;
+  }
+
+  .timeline-year-main{
+    font-size:14px !important;
+  }
+
+  .timeline-cell-inner{
+    min-height:82px !important;
+  }
+
+  .timeline-cell textarea{
+    min-height:54px !important;
+    font-size:13px !important;
+  }
+
+  /* relationship page */
+  .relationship-toolbar,
+  .relationship-toolbar.secondary-row{
+    display:grid !important;
+    grid-template-columns:1fr !important;
+    gap:10px !important;
+  }
+
+  .relationship-toolbar button{
+    width:100% !important;
+    margin:0 !important;
+  }
+
+  .relationship-side{
+    grid-template-columns:1fr !important;
+  }
+
+  .relationship-list-item{
+    min-height:46px !important;
+    padding:10px !important;
+    font-size:13px !important;
+  }
+
+  .relationship-small-btn{
+    min-height:38px !important;
+    padding:8px 10px !important;
+    font-size:12px !important;
+  }
+
+  .relationship-canvas{
+    height:620px !important;
+    overflow:auto !important;
+  }
+
+  .relationship-node{
+    width:138px !important;
+    min-height:68px !important;
+    padding:9px !important;
+  }
+
+  .relationship-face{
+    width:32px !important;
+    height:32px !important;
+  }
+
+  .relationship-node-name{
+    font-size:13px !important;
+  }
+
+  .relationship-label{
+    font-size:12px !important;
+    padding:5px 8px !important;
+  }
+
+  .relationship-dialog{
+    width:calc(100vw - 18px) !important;
+    border-radius:18px !important;
+  }
+
+  .relationship-dialog-grid{
+    grid-template-columns:1fr !important;
+  }
+
+  .relationship-dialog-actions{
+    display:grid !important;
+    grid-template-columns:1fr !important;
+    gap:8px !important;
+  }
+
+  .relationship-dialog-actions button{
+    width:100% !important;
+    margin:0 !important;
+  }
+}
+
+/* very small phones */
+@media(max-width:420px){
+  .header-button{
+    padding:10px 13px !important;
+    font-size:13px !important;
+  }
+
+  .site-brand{
+    font-size:20px !important;
+  }
+
+  .timeline-toolbar{
+    grid-template-columns:1fr !important;
+  }
+
+  .timeline-filter-actions{
+    grid-template-columns:1fr !important;
+  }
+
+  .modal-edit-top,
+  .modal-delete-top{
+    top:calc(100% - 58px) !important;
+  }
+
+  .modal-edit-top{
+    right:12px !important;
+  }
+
+  .modal-delete-top{
+    right:74px !important;
+  }
+}
+
+/* v1.18 cache-bust marker: mobile CSS should be active */
