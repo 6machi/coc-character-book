@@ -59,24 +59,50 @@ document.addEventListener('keydown', function(event){
 });
 
 
+async function loadSiteTitle(){
+  try{
+    const {data,error}=await sb.from('site_settings').select('value').eq('key','site_title').maybeSingle();
+    if(error) throw error;
+    return (data&&data.value)?String(data.value):'自陣キャラ図鑑';
+  }catch(error){
+    console.warn('site title load failed',error);
+    return '自陣キャラ図鑑';
+  }
+}
+async function saveSiteTitle(title){
+  const value=(title||'').trim()||'自陣キャラ図鑑';
+  const {error}=await sb.from('site_settings').upsert({key:'site_title',value,updated_at:new Date().toISOString()},{onConflict:'key'});
+  if(error) throw error;
+  return value;
+}
+function setSiteTitle(title){
+  const value=(title||'').trim()||'自陣キャラ図鑑';
+  document.querySelectorAll('#siteTitle,.site-brand').forEach(x=>x.textContent=value);
+  document.title=document.title.replace(/^.*?(?=｜|$)/,value);
+}
 function initSiteTitle(){
-  const el = document.getElementById('siteTitle');
-  if(!el) return;
+  const el=document.getElementById('siteTitle');
+  if(!el)return;
 
-  const key = 'cocbook_site_title';
-  const saved = localStorage.getItem(key);
-  if(saved) el.textContent = saved;
+  loadSiteTitle().then(setSiteTitle);
 
-  if(el.dataset.boundTitle === '1') return;
-  el.dataset.boundTitle = '1';
-  el.title = 'クリックでタイトル変更';
-  el.style.cursor = 'pointer';
+  if(el.dataset.boundTitle==='1')return;
+  el.dataset.boundTitle='1';
+  el.title='クリックでタイトル変更';
+  el.style.cursor='pointer';
 
-  el.addEventListener('click', () => {
-    const next = prompt('サイトタイトルを入力してください', el.textContent.trim());
-    if(next === null) return;
-    const title = next.trim() || '自陣キャラ図鑑';
-    localStorage.setItem(key, title);
-    document.querySelectorAll('#siteTitle,.site-brand').forEach(x => x.textContent = title);
+  el.addEventListener('click',async()=>{
+    const next=prompt('サイトタイトルを入力してください',el.textContent.trim());
+    if(next===null)return;
+    const title=next.trim()||'自陣キャラ図鑑';
+    const before=el.textContent;
+    setSiteTitle(title);
+    try{
+      await saveSiteTitle(title);
+    }catch(error){
+      console.error(error);
+      setSiteTitle(before);
+      alert('タイトルの保存に失敗しました：'+error.message);
+    }
   });
 }
