@@ -261,7 +261,7 @@
 <body>
   <header>
     <div class="header-inner">
-      <div><h1 class="site-brand">自陣キャラ図鑑</h1></div>
+      <div><h1 class="site-brand" id="siteTitle">自陣キャラ図鑑</h1></div>
       <div class="header-buttons">
         <a class="header-button" href="./index.html">キャラクター</a>
         <a class="header-button" href="./compare.html">質問</a>
@@ -283,6 +283,15 @@
       </div>
     </section>
 
+    <section class="panel timeline-filter-panel">
+      <div class="page-title-row"><h2>表示キャラクター</h2></div>
+      <div class="timeline-filter-actions">
+        <button class="secondary-button" onclick="selectAllTimelineCharacters()">全員表示</button>
+        <button class="secondary-button" onclick="clearTimelineCharacters()">全員非表示</button>
+      </div>
+      <div id="timelineCharacterFilter" class="timeline-filter-list"></div>
+    </section>
+
     <section class="timeline-shell" id="timelineShell">
       <table id="timelineTable"></table>
     </section>
@@ -291,10 +300,12 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="./config.js"></script>
   <script src="./common.js"></script>
+  <script>initSiteTitle();</script>
 
   <script>
     let timelineCharacters = [];
     let timelineEntries = {};
+    let selectedTimelineCharacters = new Set();
 
     async function loadTimeline() {
       document.getElementById("message").textContent = "読み込み中...";
@@ -323,12 +334,19 @@
         .filter(character => Number.isFinite(character.currentAge))
         .sort((a, b) => b.currentAge - a.currentAge);
 
+      const availableIds = new Set(timelineCharacters.map(character => character.id));
+      selectedTimelineCharacters = new Set([...selectedTimelineCharacters].filter(id => availableIds.has(id)));
+      if(selectedTimelineCharacters.size === 0){
+        selectedTimelineCharacters = new Set(timelineCharacters.map(character => character.id));
+      }
+
       timelineEntries = {};
       (entriesResult.data || []).forEach(row => {
         if (!timelineEntries[row.character_id]) timelineEntries[row.character_id] = {};
         timelineEntries[row.character_id][row.years_ago] = row.text || "";
       });
 
+      renderTimelineFilter();
       renderTimelineTable();
       document.getElementById("message").textContent = "読み込みました";
     }
@@ -340,8 +358,13 @@
       return Number.isFinite(number) ? number : NaN;
     }
 
+    function visibleTimelineCharacters() {
+      return timelineCharacters.filter(character => selectedTimelineCharacters.has(character.id));
+    }
+
     function years() {
-      const max = Math.max(...timelineCharacters.map(character => character.currentAge || 0), 0);
+      const visible = visibleTimelineCharacters();
+      const max = Math.max(...visible.map(character => character.currentAge || 0), 0);
       const list = [];
 
       for (let year = max; year >= 0; year--) {
@@ -354,11 +377,24 @@
     function renderTimelineTable() {
       const table = document.getElementById("timelineTable");
 
+      const visibleCharacters = visibleTimelineCharacters();
+
       if (timelineCharacters.length === 0) {
         table.innerHTML = `
           <tbody>
             <tr>
               <td style="padding:18px;">年齢が登録されているキャラクターがまだいません。</td>
+            </tr>
+          </tbody>
+        `;
+        return;
+      }
+
+      if (visibleCharacters.length === 0) {
+        table.innerHTML = `
+          <tbody>
+            <tr>
+              <td style="padding:18px;">表示するキャラクターを選択してください。</td>
             </tr>
           </tbody>
         `;
@@ -382,7 +418,7 @@
 
       const body = `
         <tbody>
-          ${timelineCharacters.map(character => renderCharacterRow(character, yearList)).join("")}
+          ${visibleCharacters.map(character => renderCharacterRow(character, yearList)).join("")}
         </tbody>
       `;
 
@@ -478,7 +514,52 @@
       document.getElementById("timelineShell").classList.toggle("timeline-compact");
     }
 
-    loadTimeline().catch(error => {
+    
+    function renderTimelineFilter() {
+      const box = document.getElementById("timelineCharacterFilter");
+      if(!box) return;
+
+      if(!timelineCharacters.length){
+        box.innerHTML = '<p class="note">年齢が登録されているキャラクターがまだいません。</p>';
+        return;
+      }
+
+      box.innerHTML = timelineCharacters.map(character => {
+        const color = col(character.image_color);
+        const checked = selectedTimelineCharacters.has(character.id) ? "checked" : "";
+        const face = character.icon_url
+          ? `<span class="timeline-filter-face" style="--c:${color};"><img src="${e(character.icon_url)}" alt="icon"></span>`
+          : `<span class="timeline-filter-face" style="--c:${color};">${e(character.emoji || "👤")}</span>`;
+
+        return `
+          <label class="timeline-filter-chip" style="--c:${color};">
+            <input type="checkbox" value="${character.id}" ${checked} onchange="toggleTimelineCharacter(this)">
+            ${face}
+            <span>${e(character.name || "名前未設定")}</span>
+          </label>
+        `;
+      }).join("");
+    }
+
+    function toggleTimelineCharacter(input){
+      if(input.checked) selectedTimelineCharacters.add(input.value);
+      else selectedTimelineCharacters.delete(input.value);
+      renderTimelineTable();
+    }
+
+    function selectAllTimelineCharacters(){
+      selectedTimelineCharacters = new Set(timelineCharacters.map(character => character.id));
+      renderTimelineFilter();
+      renderTimelineTable();
+    }
+
+    function clearTimelineCharacters(){
+      selectedTimelineCharacters = new Set();
+      renderTimelineFilter();
+      renderTimelineTable();
+    }
+
+loadTimeline().catch(error => {
       console.error(error);
       document.getElementById("message").textContent = "読み込みに失敗しました：" + error.message;
     });

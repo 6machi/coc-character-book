@@ -1027,3 +1027,146 @@ dialog{position:relative}
 .modal-delete-top:hover{
   background:#fff5f6;
 }
+
+/* v1.15 adjustments */
+
+/* Editable site title */
+.site-brand{
+  user-select:none;
+}
+.site-brand:hover{
+  opacity:.78;
+}
+
+/* Remove muddy character card gradient */
+.card::before{
+  background:none !important;
+  opacity:0 !important;
+}
+.card{
+  background:rgba(255,255,255,.76) !important;
+}
+
+/* Modal close/edit/delete: keep visible outside top-right while scrolling */
+dialog{
+  overflow:visible !important;
+}
+dialog .modal-body{
+  max-height:70vh;
+  overflow:auto;
+}
+.modal-x{
+  position:fixed !important;
+  top:calc(7vh - 14px) !important;
+  right:calc((100vw - min(940px, calc(100% - 28px))) / 2 - 18px) !important;
+  z-index:2147482500 !important;
+  width:38px !important;
+  height:38px !important;
+  background:#fff !important;
+  color:#252936 !important;
+  border:1px solid rgba(210,216,230,.95) !important;
+  box-shadow:0 10px 28px rgba(40,48,72,.24) !important;
+}
+.modal-edit-top,
+.modal-delete-top{
+  position:fixed !important;
+  top:calc(7vh + 4px) !important;
+  z-index:2147482400 !important;
+}
+.modal-edit-top{
+  right:calc((100vw - min(940px, calc(100% - 28px))) / 2 + 52px) !important;
+}
+.modal-delete-top{
+  right:calc((100vw - min(940px, calc(100% - 28px))) / 2 + 122px) !important;
+}
+
+/* Timeline compact rows */
+.timeline-char-col{
+  padding:4px 8px !important;
+}
+.timeline-char-simple{
+  min-height:28px !important;
+  gap:2px !important;
+  padding-left:7px !important;
+}
+.timeline-cell-inner{
+  min-height:82px !important;
+}
+.timeline-cell textarea{
+  min-height:54px !important;
+  padding:6px 7px !important;
+}
+.timeline-age-line{
+  min-height:22px !important;
+  padding:3px 7px !important;
+}
+.timeline-shell th,
+.timeline-shell td{
+  border-bottom:1px solid rgba(215,222,234,.9) !important;
+}
+
+/* Timeline character filter */
+.timeline-filter-panel{
+  padding:14px 16px !important;
+}
+.timeline-filter-actions{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  margin-bottom:10px;
+}
+.timeline-filter-list{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+}
+.timeline-filter-chip{
+  --c:#999;
+  display:inline-flex;
+  align-items:center;
+  gap:7px;
+  margin:0;
+  padding:7px 10px;
+  border-radius:999px;
+  background:rgba(255,255,255,.74);
+  border:1px solid rgba(210,216,230,.9);
+  color:var(--text);
+  font-size:12px;
+  cursor:pointer;
+}
+.timeline-filter-chip input{
+  width:auto;
+  margin:0;
+}
+.timeline-filter-face{
+  width:22px;
+  height:22px;
+  border-radius:8px;
+  background:var(--c);
+  display:grid;
+  place-items:center;
+  overflow:hidden;
+  font-size:12px;
+  border:1px solid rgba(255,255,255,.9);
+}
+.timeline-filter-face img{
+  width:100%;
+  height:100%;
+  object-fit:contain;
+  display:block;
+}
+
+@media(max-width:800px){
+  .modal-x{
+    top:10px !important;
+    right:10px !important;
+  }
+  .modal-edit-top{
+    top:12px !important;
+    right:58px !important;
+  }
+  .modal-delete-top{
+    top:12px !important;
+    right:116px !important;
+  }
+}

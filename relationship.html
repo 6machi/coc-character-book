@@ -226,7 +226,7 @@
 <body>
   <header>
     <div class="header-inner">
-      <div><h1 class="site-brand">自陣キャラ図鑑</h1></div>
+      <div><h1 class="site-brand" id="siteTitle">自陣キャラ図鑑</h1></div>
       <div class="header-buttons">
         <a class="header-button" href="./index.html">キャラクター</a>
         <a class="header-button" href="./compare.html">質問</a>
@@ -335,6 +335,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="./config.js"></script>
   <script src="./common.js"></script>
+  <script>initSiteTitle();</script>
   <script>
     let relationshipCharacters = [];
     let relationshipRelations = [];

@@ -57,3 +57,26 @@ document.addEventListener('click', function(event){
 document.addEventListener('keydown', function(event){
   if(event.key === 'Escape') closeInfoPopover();
 });
+
+
+function initSiteTitle(){
+  const el = document.getElementById('siteTitle');
+  if(!el) return;
+
+  const key = 'cocbook_site_title';
+  const saved = localStorage.getItem(key);
+  if(saved) el.textContent = saved;
+
+  if(el.dataset.boundTitle === '1') return;
+  el.dataset.boundTitle = '1';
+  el.title = 'クリックでタイトル変更';
+  el.style.cursor = 'pointer';
+
+  el.addEventListener('click', () => {
+    const next = prompt('サイトタイトルを入力してください', el.textContent.trim());
+    if(next === null) return;
+    const title = next.trim() || '自陣キャラ図鑑';
+    localStorage.setItem(key, title);
+    document.querySelectorAll('#siteTitle,.site-brand').forEach(x => x.textContent = title);
+  });
+}
