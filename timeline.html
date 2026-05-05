@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>時系列</title>
+  <link rel="stylesheet" href="./style.css">
+  <style>
+    .timeline-panel {
+      padding: 18px;
+    }
+
+    .timeline-toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 9px;
+      align-items: center;
+      margin-top: 13px;
+    }
+
+    .timeline-message {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .timeline-shell {
+      overflow: auto;
+      border-radius: 14px;
+      border: 1px solid var(--line);
+      box-shadow: var(--glass-shadow-soft);
+      background: rgba(255,255,255,.62);
+      max-height: 76vh;
+    }
+
+    .timeline-shell table {
+      border-collapse: separate;
+      border-spacing: 0;
+      width: max-content;
+      min-width: 100%;
+    }
+
+    .timeline-shell th,
+    .timeline-shell td {
+      border-right: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+      background: rgba(255,255,255,.9);
+      vertical-align: top;
+    }
+
+    .timeline-shell thead th {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      background: rgba(238,243,251,.98);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+    }
+
+    .timeline-corner {
+      left: 0;
+      z-index: 20 !important;
+      min-width: 220px;
+      width: 220px;
+      position: sticky !important;
+      background: rgba(232,238,248,.98) !important;
+      padding: 10px;
+      text-align: left;
+    }
+
+    .timeline-year-head {
+      min-width: 168px;
+      width: 168px;
+      padding: 8px;
+      text-align: center;
+    }
+
+    .timeline-year-main {
+      display: block;
+      font-weight: 900;
+      font-size: 15px;
+    }
+
+    .timeline-char-col {
+      position: sticky;
+      left: 0;
+      z-index: 6;
+      min-width: 220px;
+      width: 220px;
+      background: rgba(255,255,255,.98) !important;
+      padding: 10px;
+    }
+
+    .timeline-char {
+      --c: #999;
+      display: grid;
+      grid-template-columns: 34px 1fr;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .timeline-emoji {
+      width: 30px;
+      height: 30px;
+      border-radius: 8px;
+      display: grid;
+      place-items: center;
+      background: var(--c);
+      border: 1px solid rgba(255,255,255,.9);
+      overflow: hidden;
+    }
+
+    .timeline-emoji img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      display: block;
+    }
+
+    .timeline-small {
+      color: var(--muted);
+      font-size: 11px;
+      margin-top: 2px;
+    }
+
+    .timeline-cell {
+      --c: #999;
+      width: 168px;
+      min-width: 168px;
+      padding: 0;
+      background: #fff;
+    }
+
+    .timeline-cell-inner {
+      display: grid;
+      grid-template-rows: auto 1fr;
+      min-height: 128px;
+    }
+
+    .timeline-age-line {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 6px;
+      min-height: 26px;
+      padding: 5px 8px;
+      background: linear-gradient(90deg, color-mix(in srgb, var(--c) 12%, #f1f4f8), #f5f7fa);
+      color: #3d4452;
+      font-weight: bold;
+      font-size: 12px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .timeline-age-line .relative {
+      color: #788194;
+      font-weight: normal;
+      font-size: 11px;
+    }
+
+    .timeline-cell textarea {
+      width: 100%;
+      min-height: 96px;
+      height: 100%;
+      resize: vertical;
+      border: none;
+      border-radius: 0;
+      background: rgba(255,255,255,.92);
+      padding: 8px;
+      font-size: 12px;
+      font-family: inherit;
+      line-height: 1.55;
+      color: var(--text);
+    }
+
+    .timeline-cell textarea:focus {
+      outline: 2px solid color-mix(in srgb, var(--c) 30%, #b7c3db);
+      outline-offset: -2px;
+      background: #fff;
+    }
+
+    .timeline-unborn {
+      opacity: .38;
+    }
+
+    .timeline-unborn textarea {
+      background: #f8f9fb;
+    }
+
+    .timeline-empty-soft .timeline-empty-cell textarea,
+    .timeline-empty-soft .timeline-empty-cell .timeline-age-line {
+      opacity: .32;
+    }
+
+    .timeline-compact .timeline-cell,
+    .timeline-compact .timeline-year-head {
+      min-width: 145px;
+      width: 145px;
+    }
+
+    .timeline-compact textarea {
+      min-height: 66px;
+    }
+
+    @media(max-width: 820px) {
+      .timeline-corner,
+      .timeline-char-col {
+        min-width: 165px;
+        width: 165px;
+      }
+
+      .timeline-year-head,
+      .timeline-cell {
+        min-width: 148px;
+        width: 148px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <div class="header-inner">
+      <div><h1 class="site-brand">自陣キャラ図鑑</h1></div>
+      <div class="header-buttons">
+        <a class="header-button" href="./index.html">キャラクター</a>
+        <a class="header-button" href="./compare.html">質問</a>
+        <a class="header-button" href="./stats.html">ステータス</a>
+        <a class="header-button" href="./timeline.html">時系列</a>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section class="panel timeline-panel">
+      <h2>時系列</h2>
+      <p class="note">キャラクターの年齢から自動で「〇〇年前」を生成します。各セルに直接出来事を書き込めます。</p>
+      <div class="timeline-toolbar">
+        <button onclick="saveTimeline()">保存する</button>
+        <button class="secondary-button" onclick="toggleEmpty()">空欄を薄くする/戻す</button>
+        <button class="secondary-button" onclick="toggleCompact()">コンパクト/標準</button>
+        <button class="secondary-button" onclick="loadTimeline()">再読み込み</button>
+        <span id="message" class="timeline-message">読み込み中...</span>
+      </div>
+    </section>
+
+    <section class="timeline-shell" id="timelineShell">
+      <table id="timelineTable"></table>
+    </section>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="./config.js"></script>
+  <script src="./common.js"></script>
+
+  <script>
+    let timelineCharacters = [];
+    let timelineEntries = {};
+
+    async function loadTimeline() {
+      document.getElementById("message").textContent = "読み込み中...";
+
+      const teamData = await team();
+
+      const [charactersResult, entriesResult] = await Promise.all([
+        sb
+          .from("characters")
+          .select("id,name,furigana,emoji,icon_url,image_color,basic,created_at")
+          .eq("team_id", teamData.id)
+          .order("created_at", { ascending: false }),
+        sb
+          .from("timeline_entries")
+          .select("*")
+      ]);
+
+      if (charactersResult.error) throw charactersResult.error;
+      if (entriesResult.error) throw entriesResult.error;
+
+      timelineCharacters = (charactersResult.data || [])
+        .map(character => ({
+          ...character,
+          currentAge: getCharacterAge(character)
+        }))
+        .filter(character => Number.isFinite(character.currentAge))
+        .sort((a, b) => b.currentAge - a.currentAge);
+
+      timelineEntries = {};
+      (entriesResult.data || []).forEach(row => {
+        if (!timelineEntries[row.character_id]) timelineEntries[row.character_id] = {};
+        timelineEntries[row.character_id][row.years_ago] = row.text || "";
+      });
+
+      renderTimelineTable();
+      document.getElementById("message").textContent = "読み込みました";
+    }
+
+    function getCharacterAge(character) {
+      const raw = character?.basic?.age;
+      if (raw === undefined || raw === null || raw === "") return NaN;
+      const number = Number(String(raw).replace(/[^\d.-]/g, ""));
+      return Number.isFinite(number) ? number : NaN;
+    }
+
+    function years() {
+      const max = Math.max(...timelineCharacters.map(character => character.currentAge || 0), 0);
+      const list = [];
+
+      for (let year = max; year >= 0; year--) {
+        list.push(year);
+      }
+
+      return list;
+    }
+
+    function renderTimelineTable() {
+      const table = document.getElementById("timelineTable");
+
+      if (timelineCharacters.length === 0) {
+        table.innerHTML = `
+          <tbody>
+            <tr>
+              <td style="padding:18px;">年齢が登録されているキャラクターがまだいません。</td>
+            </tr>
+          </tbody>
+        `;
+        return;
+      }
+
+      const yearList = years();
+
+      const head = `
+        <thead>
+          <tr>
+            <th class="timeline-corner">HO / 名前</th>
+            ${yearList.map(year => `
+              <th class="timeline-year-head">
+                <span class="timeline-year-main">${year}年前</span>
+              </th>
+            `).join("")}
+          </tr>
+        </thead>
+      `;
+
+      const body = `
+        <tbody>
+          ${timelineCharacters.map(character => renderCharacterRow(character, yearList)).join("")}
+        </tbody>
+      `;
+
+      table.innerHTML = head + body;
+    }
+
+    function renderCharacterRow(character, yearList) {
+      const color = col(character.image_color);
+      const emoji = character.emoji || "👤";
+
+      const icon = character.icon_url
+        ? `<span class="timeline-emoji" style="--c:${color};"><img src="${e(character.icon_url)}" alt="icon"></span>`
+        : `<span class="timeline-emoji" style="--c:${color};">${e(emoji)}</span>`;
+
+      return `
+        <tr>
+          <th class="timeline-char-col">
+            <div class="timeline-char" style="--c:${color};">
+              ${icon}
+              <div>
+                <b>${e(character.name || "名前未設定")}</b>
+                <div class="timeline-small">${e(character.furigana || "")}</div>
+                <div class="timeline-small">現在年齢：${character.currentAge}歳</div>
+              </div>
+            </div>
+          </th>
+          ${yearList.map(year => renderCell(character, year, color)).join("")}
+        </tr>
+      `;
+    }
+
+    function renderCell(character, yearsAgo, color) {
+      const age = character.currentAge - yearsAgo;
+      const isUnborn = age < 0;
+      const ageLabel = isUnborn ? "未出生" : `${age}歳`;
+      const text = timelineEntries?.[character.id]?.[yearsAgo] || "";
+      const emptyClass = text.trim() ? "" : "timeline-empty-cell";
+
+      return `
+        <td class="timeline-cell ${isUnborn ? "timeline-unborn" : ""} ${emptyClass}" style="--c:${color};" data-character="${character.id}" data-years-ago="${yearsAgo}">
+          <div class="timeline-cell-inner">
+            <div class="timeline-age-line">
+              <span>${ageLabel}</span>
+              <span class="relative">${yearsAgo}年前</span>
+            </div>
+            <textarea placeholder="${isUnborn ? "未出生" : "この時期の出来事"}">${e(text)}</textarea>
+          </div>
+        </td>
+      `;
+    }
+
+    function collectTimelineEntries() {
+      const rows = [];
+
+      document.querySelectorAll(".timeline-cell").forEach(cell => {
+        const characterId = cell.dataset.character;
+        const yearsAgo = Number(cell.dataset.yearsAgo);
+        const text = cell.querySelector("textarea").value.trim();
+
+        if (!characterId || !Number.isFinite(yearsAgo)) return;
+
+        rows.push({
+          character_id: characterId,
+          years_ago: yearsAgo,
+          text,
+          updated_at: new Date().toISOString()
+        });
+      });
+
+      return rows;
+    }
+
+    async function saveTimeline() {
+      document.getElementById("message").textContent = "保存中...";
+
+      const rows = collectTimelineEntries();
+
+      if (rows.length === 0) {
+        document.getElementById("message").textContent = "保存する行がありません";
+        return;
+      }
+
+      const { error } = await sb
+        .from("timeline_entries")
+        .upsert(rows, { onConflict: "character_id,years_ago" });
+
+      if (error) {
+        console.error(error);
+        document.getElementById("message").textContent = "保存に失敗しました：" + error.message;
+        return;
+      }
+
+      document.getElementById("message").textContent = "保存しました";
+      await loadTimeline();
+    }
+
+    function toggleEmpty() {
+      document.body.classList.toggle("timeline-empty-soft");
+    }
+
+    function toggleCompact() {
+      document.getElementById("timelineShell").classList.toggle("timeline-compact");
+    }
+
+    loadTimeline().catch(error => {
+      console.error(error);
+      document.getElementById("message").textContent = "読み込みに失敗しました：" + error.message;
+    });
+  </script>
+</body>
+</html>
