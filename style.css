@@ -66,31 +66,13 @@ header{
 
 .site-brand{
   margin:0;
-  display:grid;
-  gap:2px;
-  line-height:1;
-}
-
-.brand-jp{
-  font-size:28px;
-  letter-spacing:.11em;
-  font-weight:800;
-  background:linear-gradient(120deg,#1e2430,#697086 50%,#1e2430);
-  -webkit-background-clip:text;
-  background-clip:text;
-  color:transparent;
+  font-family:"Hiragino Maru Gothic ProN","Yu Gothic","Hiragino Sans",sans-serif;
+  font-size:27px;
+  line-height:1.1;
+  letter-spacing:.04em;
+  font-weight:700;
+  color:#252936;
   text-shadow:0 1px 0 rgba(255,255,255,.9);
-}
-
-.brand-en{
-  margin-top:5px;
-  color:var(--muted);
-  font-size:11px;
-  font-family:Georgia,"Times New Roman",serif;
-  font-style:italic;
-  font-weight:400;
-  letter-spacing:.22em;
-  text-transform:uppercase;
 }
 
 p{
@@ -100,12 +82,7 @@ p{
   line-height:1.7;
 }
 
-.header-inner p{
-  margin-top:8px;
-  color:#7d8292;
-  font-size:12px;
-  letter-spacing:.16em;
-}
+
 
 .header-buttons{
   display:flex;
@@ -675,8 +652,8 @@ canvas{
     justify-content:flex-start;
   }
 
-  .brand-jp{
-    font-size:24px;
+  .site-brand{
+    font-size:23px;
   }
 
   main{
@@ -708,3 +685,5 @@ canvas{
     width:130px;
   }
 }
+
+.brand-jp{font:inherit;color:inherit;letter-spacing:inherit;text-shadow:inherit;background:none;-webkit-background-clip:initial;background-clip:initial}.brand-en{display:none!important}
