@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>時系列</title>
-  <link rel="stylesheet" href="./style.css?v=140">
+  <link rel="stylesheet" href="./style.css?v=141">
   <style>
     .timeline-panel {
       padding: 18px;
@@ -303,8 +303,8 @@
   <div class="unsaved-pill">未保存の変更があります</div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="./config.js?v=140"></script>
-  <script src="./common.js?v=140"></script>
+  <script src="./config.js?v=141"></script>
+  <script src="./common.js?v=141"></script>
   <script>initSiteTitle();</script>
 
   <script>
@@ -469,7 +469,7 @@
               <span>${ageLabel}</span>
               <span class="relative">${yearsAgo}年前</span>
             </div>
-            <textarea data-original="${c(text)}" data-updated-at="${e(timelineEntryMeta?.[character.id]?.[yearsAgo] || "")}" oninput="markTimelineChanged(this)" placeholder="${isUnborn ? "未出生" : "この時期の出来事"}">${e(text)}</textarea>
+            <textarea data-original="${c(text)}" data-updated-at="${e(timelineEntryMeta?.[character.id]?.[year] || "")}" oninput="markTimelineChanged(this)" placeholder="${isUnborn ? "未出生" : "この時期の出来事"}">${e(text)}</textarea>
           </div>
         </td>
       `;
@@ -535,38 +535,57 @@
     }
 
     async function saveTimeline() {
-      document.getElementById("message").textContent = "保存中...";
+      const messageEl = document.getElementById("message");
+      messageEl.textContent = "保存中...";
 
       const rows = collectTimelineEntries();
 
       if (rows.length === 0) {
-        document.getElementById("message").textContent = "保存する変更がありません";
+        messageEl.textContent = "保存する変更がありません";
         return;
       }
 
       try{
         await assertTimelineUnchanged(rows);
+
+        for(const row of rows){
+          const payload = {
+            character_id: row.character_id,
+            years_ago: row.years_ago,
+            text: row.text,
+            updated_at: new Date().toISOString()
+          };
+
+          const existing = await sb
+            .from("timeline_entries")
+            .select("character_id")
+            .eq("character_id", row.character_id)
+            .eq("years_ago", row.years_ago)
+            .limit(1);
+
+          if(existing.error) throw existing.error;
+
+          if(existing.data && existing.data.length){
+            const updated = await sb
+              .from("timeline_entries")
+              .update({ text: row.text, updated_at: payload.updated_at })
+              .eq("character_id", row.character_id)
+              .eq("years_ago", row.years_ago);
+            if(updated.error) throw updated.error;
+          }else{
+            const inserted = await sb.from("timeline_entries").insert(payload);
+            if(inserted.error) throw inserted.error;
+          }
+        }
+
+        messageEl.textContent = "保存しました";
+        clearUnsavedChanges();
+        await loadTimeline();
       }catch(error){
         console.error(error);
-        document.getElementById("message").textContent = error.message;
-        alert(error.message);
-        return;
+        messageEl.textContent = "保存に失敗しました：" + (error && error.message ? error.message : error);
+        alert("時系列の保存に失敗しました：" + (error && error.message ? error.message : error));
       }
-
-      const saveRows = rows.map(({original_updated_at, ...row}) => row);
-      const { error } = await sb
-        .from("timeline_entries")
-        .upsert(saveRows, { onConflict: "character_id,years_ago" });
-
-      if (error) {
-        console.error(error);
-        document.getElementById("message").textContent = "保存に失敗しました：" + error.message;
-        return;
-      }
-
-      document.getElementById("message").textContent = "保存しました";
-      clearUnsavedChanges();
-      await loadTimeline();
     }
 
     function toggleEmpty() {
@@ -647,7 +666,7 @@
                   <span>${ageLabel}</span>
                 </div>
               </div>
-              <textarea data-original="${c(text)}" data-updated-at="${e(timelineEntryMeta?.[character.id]?.[yearsAgo] || "")}" oninput="markTimelineChanged(this)" placeholder="${isUnborn ? "未出生" : "この時期の出来事"}">${e(text)}</textarea>
+              <textarea data-original="${c(text)}" data-updated-at="${e(timelineEntryMeta?.[character.id]?.[year] || "")}" oninput="markTimelineChanged(this)" placeholder="${isUnborn ? "未出生" : "この時期の出来事"}">${e(text)}</textarea>
             </div>
           `;
         }).join("");
