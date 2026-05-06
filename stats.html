@@ -1,8 +1,198 @@
-<!DOCTYPE html><html lang="ja"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>ステータス</title><link rel="stylesheet" href="./style.css?v=132"></head><body><header><div class="header-inner"><div><h1 class="site-brand" id="siteTitle">自陣キャラ図鑑</h1></div><div class="header-buttons"><a class="header-button" href="./index.html">キャラクター</a><a class="header-button" href="./compare.html">質問</a><a class="header-button" href="./timeline.html">時系列</a><a class="header-button" href="./relationship.html">相関図</a></div></div></header><main><section class="panel"><div class="page-title-row"><h2>ステータス</h2><span class="info-wrap"><button class="info-button" type="button" aria-label="ステータスの説明"><svg class="info-svg" viewBox="0 0 1200 1200" aria-hidden="true" focusable="false"><path d="M600 20C279.7 20 20 279.7 20 600s259.7 580 580 580 580-259.7 580-580S920.3 20 600 20zm0 70c281.6 0 510 228.4 510 510s-228.4 510-510 510S90 881.6 90 600 318.4 90 600 90z"/><circle cx="600" cy="285" r="100"/><rect x="500" y="430" width="200" height="520" rx="95"/></svg></button><span class="info-pop"><b>ステータス比較</b>初期状態では全員選択済みです。チェックを外すと比較対象から外せます。</span></span></div><div class="layout-two" style="margin-top:16px"><div class="compare-list" id="checks"></div><div class="chart-box"><canvas id="cv" width="620" height="520"></canvas></div></div></section><section class="panel"><div class="page-title-row"><h2>ステータス一覧</h2><span class="info-wrap"><button class="info-button" type="button" aria-label="ステータス一覧の説明"><svg class="info-svg" viewBox="0 0 1200 1200" aria-hidden="true" focusable="false"><path d="M600 20C279.7 20 20 279.7 20 600s259.7 580 580 580 580-259.7 580-580S920.3 20 600 20zm0 70c281.6 0 510 228.4 510 510s-228.4 510-510 510S90 881.6 90 600 318.4 90 600 90z"/><circle cx="600" cy="285" r="100"/><rect x="500" y="430" width="200" height="520" rx="95"/></svg></button><span class="info-pop"><b>技能一覧</b>キャラクターごとのステータス・技能値を表で確認できます。芸術・製作などはテキストも表示できます。</span></span></div><div class="table-wrap" id="tw"><p class="note">読み込み中...</p></div></section></main><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="./config.js?v=132"></script><script src="./common.js?v=132"></script><script>initSiteTitle();</script><script>
-const STATUS_MAX=20;let CH=[],SM={};async function init(){let t=await team();let [cr,sr]=await Promise.all([sb.from('characters').select('id,name,furigana,emoji,image_color,created_at,sort_order').eq('team_id',t.id).order('sort_order',{ascending:true,nullsFirst:false}).order('created_at',{ascending:true}),sb.from('stats').select('*')]);if(cr.error)throw cr.error;if(sr.error)throw sr.error;CH=sortedCharacters(cr.data||[]);(sr.data||[]).forEach(x=>SM[x.character_id]=x.values||{});renderChecks();renderTable();draw()}
-function renderChecks(){if(!CH.length){checks.innerHTML='<p class="note">キャラクターがありません。</p>';return}checks.innerHTML=CH.map(ch=>{let cc=col(ch.image_color),em=firstEmoji(ch.emoji);return`<label class="compare-item"><input type="checkbox" value="${c(ch.id)}" checked onchange="draw()"><span class="mini-emoji" style="--c:${cc}">${e(em)}</span><span style="color:${cc};font-weight:bold">${e(ch.name||'名前未設定')}</span></label>`}).join('')}
-function num(v){const n=Number(String(v??'').replace(/[^0-9.-]/g,''));return Number.isFinite(n)?n:0}
-function draw(){let canvas=cv,ctx=canvas.getContext('2d'),w=canvas.width,h=canvas.height,cx=w/2,cy=h/2+12,r=180;ctx.clearRect(0,0,w,h);ctx.fillStyle='#fff';ctx.fillRect(0,0,w,h);grid(ctx,cx,cy,r);[...document.querySelectorAll('#checks input:checked')].map(x=>x.value).forEach((id,i)=>{let ch=CH.find(x=>x.id===id);if(!ch)return;let vals=AB.map(k=>num(SM[id]?.[k]));line(ctx,cx,cy,r,vals,col(ch.image_color));legend(ctx,ch,col(ch.image_color),i)})}
-function ang(i){return-Math.PI/2+Math.PI*2*i/AB.length}function poly(ctx,cx,cy,r){ctx.beginPath();AB.forEach((_,i)=>{let a=ang(i),x=cx+Math.cos(a)*r,y=cy+Math.sin(a)*r;if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y)});ctx.closePath();ctx.stroke()}function grid(ctx,cx,cy,r){ctx.strokeStyle='#d8d8dc';ctx.fillStyle='#666';ctx.lineWidth=1;ctx.font='12px sans-serif';for(let l=1;l<=5;l++){poly(ctx,cx,cy,r*l/5);ctx.textAlign='left';ctx.textBaseline='middle';ctx.fillText(String(l*4),cx+6,cy-r*l/5)}AB.forEach((k,i)=>{let a=ang(i),x=cx+Math.cos(a)*r,y=cy+Math.sin(a)*r;ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(x,y);ctx.stroke();let lx=cx+Math.cos(a)*(r+30),ly=cy+Math.sin(a)*(r+30);ctx.textAlign=lx<cx-10?'right':lx>cx+10?'left':'center';ctx.textBaseline=ly<cy?'bottom':'top';ctx.fillText(k,lx,ly)})}function line(ctx,cx,cy,r,vals,color){ctx.beginPath();vals.forEach((v,i)=>{let sv=Math.max(0,Math.min(STATUS_MAX,Number(v||0)));let a=ang(i),rr=r*sv/STATUS_MAX,x=cx+Math.cos(a)*rr,y=cy+Math.sin(a)*rr;if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y)});ctx.closePath();let R=rgb(color)||{r:153,g:153,b:153};ctx.fillStyle=`rgba(${R.r},${R.g},${R.b},0.14)`;ctx.strokeStyle=color;ctx.lineWidth=2;ctx.fill();ctx.stroke()}function legend(ctx,ch,color,i){let x=24,y=24+i*22;ctx.fillStyle=color;ctx.fillRect(x,y-10,12,12);ctx.fillStyle='#222';ctx.font='13px sans-serif';ctx.textAlign='left';ctx.textBaseline='middle';ctx.fillText(ch.name||'名前未設定',x+18,y-4)}
-function renderTable(){if(!CH.length){tw.innerHTML='<p class="note">キャラクターがありません。</p>';return}let head=`<thead><tr><th class="sticky-col">項目</th>${CH.map(ch=>{let cc=col(ch.image_color),em=firstEmoji(ch.emoji);return`<th class="character-col"><span style="color:${cc};font-weight:bold">${e(ch.name||'名前未設定')}</span> <span>${e(em)}</span></th>`}).join('')}</tr></thead>`;let rows=SG.map(g=>`<tr class="group-row"><th class="sticky-col">${e(g.title)}</th>${CH.map(()=>'<td></td>').join('')}</tr>`+g.keys.map(k=>`<tr><th class="sticky-col">${e(k)}</th>${CH.map(ch=>`<td>${e(SM[ch.id]?.[k]||statDefault(k)||'—')}</td>`).join('')}</tr>`).join('')).join('');tw.innerHTML=`<table>${head}<tbody>${rows}</tbody></table>`}init().catch(x=>tw.innerHTML='<p class="note">読み込み失敗：'+e(x.message)+'</p>')
-</script></body></html>
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ステータス</title>
+  <link rel="stylesheet" href="./style.css?v=134">
+  <style>
+    .stats-controls{
+      display:grid;
+      grid-template-columns:minmax(180px,280px) minmax(120px,160px) 1fr;
+      gap:12px;
+      align-items:end;
+      margin:14px 0 16px;
+      padding:12px;
+      border-radius:16px;
+      background:rgba(255,255,255,.62);
+      border:1px solid rgba(255,255,255,.9);
+    }
+    .stats-controls label{display:block;color:var(--sub);font-size:12px;font-weight:bold;margin-bottom:5px}
+    .stats-checks{display:flex;gap:12px;flex-wrap:wrap;align-items:center;padding-bottom:4px}
+    .stats-checks label{display:flex;gap:6px;align-items:center;margin:0;color:var(--text);font-size:13px}
+    .stat-high{background:rgba(255,193,7,.18)!important;font-weight:900;color:#8a5d00}
+    .stat-low{background:rgba(137,195,235,.18)!important;color:#23617d}
+    .stat-sort-note{color:var(--muted);font-size:12px;margin-top:6px}
+    @media(max-width:760px){.stats-controls{grid-template-columns:1fr}.stats-checks{display:grid;gap:8px}}
+  </style>
+</head>
+<body>
+  <header>
+    <div class="header-inner">
+      <div><h1 class="site-brand" id="siteTitle">自陣キャラ図鑑</h1></div>
+      <div class="header-buttons">
+        <a class="header-button" href="./index.html">キャラクター</a>
+        <a class="header-button" href="./compare.html">質問</a>
+        <a class="header-button" href="./timeline.html">時系列</a>
+        <a class="header-button" href="./relationship.html">相関図</a>
+      </div>
+    </div>
+  </header>
+  <main>
+    <section class="panel">
+      <div class="page-title-row"><h2>ステータス</h2><span class="info-wrap"><button class="info-button" type="button" aria-label="ステータスの説明"><svg class="info-svg" viewBox="0 0 1200 1200" aria-hidden="true" focusable="false"><path d="M600 20C279.7 20 20 279.7 20 600s259.7 580 580 580 580-259.7 580-580S920.3 20 600 20zm0 70c281.6 0 510 228.4 510 510s-228.4 510-510 510S90 881.6 90 600 318.4 90 600 90z"/><circle cx="600" cy="285" r="100"/><rect x="500" y="430" width="200" height="520" rx="95"/></svg></button><span class="info-pop"><b>ステータス比較</b>初期状態では全員選択済みです。チェックを外すと比較対象から外せます。</span></span></div>
+      <div class="layout-two" style="margin-top:16px"><div class="compare-list" id="checks"></div><div class="chart-box"><canvas id="cv" width="620" height="520"></canvas></div></div>
+    </section>
+
+    <section class="panel">
+      <div class="page-title-row"><h2>ステータス一覧</h2><span class="info-wrap"><button class="info-button" type="button" aria-label="ステータス一覧の説明"><svg class="info-svg" viewBox="0 0 1200 1200" aria-hidden="true" focusable="false"><path d="M600 20C279.7 20 20 279.7 20 600s259.7 580 580 580 580-259.7 580-580S920.3 20 600 20zm0 70c281.6 0 510 228.4 510 510s-228.4 510-510 510S90 881.6 90 600 318.4 90 600 90z"/><circle cx="600" cy="285" r="100"/><rect x="500" y="430" width="200" height="520" rx="95"/></svg></button><span class="info-pop"><b>技能一覧</b>キャラクターごとのステータス・技能値を表で確認できます。一番高い値/低い値の色付け、ステータス順の並び替え、全員初期値の技能の非表示ができます。</span></span></div>
+
+      <div class="stats-controls">
+        <div>
+          <label for="sortKey">並び替え</label>
+          <select id="sortKey" onchange="renderTable()"></select>
+          <div class="stat-sort-note">例：APPが高い順、目星が高い順など</div>
+        </div>
+        <div>
+          <label for="sortDir">順番</label>
+          <select id="sortDir" onchange="renderTable()">
+            <option value="desc">高い順</option>
+            <option value="asc">低い順</option>
+          </select>
+        </div>
+        <div class="stats-checks">
+          <label><input id="highlightExtremes" type="checkbox" checked onchange="renderTable()"> 一番高い/低い値に色をつける</label>
+          <label><input id="hideDefaults" type="checkbox" onchange="renderTable()"> 全員初期値の技能を隠す</label>
+        </div>
+      </div>
+
+      <div class="table-wrap" id="tw"><p class="note">読み込み中...</p></div>
+    </section>
+  </main>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="./config.js?v=134"></script>
+  <script src="./common.js?v=134"></script>
+  <script>initSiteTitle();</script>
+  <script>
+    const STATUS_MAX = 20;
+    let CH = [];
+    let SM = {};
+
+    async function init(){
+      const t = await team();
+      const [cr, sr] = await Promise.all([
+        sb.from('characters').select('id,name,furigana,emoji,image_color,created_at,sort_order').eq('team_id',t.id).order('sort_order',{ascending:true,nullsFirst:false}).order('created_at',{ascending:true}),
+        sb.from('stats').select('*')
+      ]);
+      if(cr.error) throw cr.error;
+      if(sr.error) throw sr.error;
+      CH = sortedCharacters(cr.data || []);
+      SM = {};
+      (sr.data || []).forEach(x => SM[x.character_id] = x.values || {});
+      renderSortOptions();
+      renderChecks();
+      renderTable();
+      draw();
+    }
+
+    function allKeys(){ return SG.flatMap(g => g.keys); }
+
+    function renderSortOptions(){
+      const options = ['<option value="__order">登録順</option>']
+        .concat(SG.map(g => `<optgroup label="${e(g.title)}">${g.keys.map(k => `<option value="${e(k)}">${e(k)}</option>`).join('')}</optgroup>`));
+      sortKey.innerHTML = options.join('');
+    }
+
+    function renderChecks(){
+      if(!CH.length){ checks.innerHTML='<p class="note">キャラクターがありません。</p>'; return; }
+      checks.innerHTML = CH.map(ch => {
+        const cc = col(ch.image_color), em = firstEmoji(ch.emoji);
+        return `<label class="compare-item"><input type="checkbox" value="${c(ch.id)}" checked onchange="draw()"><span class="mini-emoji" style="--c:${cc}">${e(em)}</span><span style="color:${cc};font-weight:bold">${e(ch.name||'名前未設定')}</span></label>`;
+      }).join('');
+    }
+
+    function numericValue(v){
+      const raw = String(v ?? '').trim();
+      if(!raw) return NaN;
+      const m = raw.match(/-?\d+(?:\.\d+)?/);
+      return m ? Number(m[0]) : NaN;
+    }
+    function num(v){ const n = numericValue(v); return Number.isFinite(n) ? n : 0; }
+    function displayValue(id,k){
+      const v = SM[id]?.[k];
+      if(v !== undefined && v !== null && String(v).trim() !== '') return String(v);
+      const d = statDefault(k);
+      return d !== undefined && d !== null && String(d).trim() !== '' ? String(d) : '';
+    }
+    function isDefaultRow(k, chars){
+      const d = String(statDefault(k) ?? '').trim();
+      return chars.every(ch => String(SM[ch.id]?.[k] ?? '').trim() === '' || String(SM[ch.id]?.[k] ?? '').trim() === d);
+    }
+    function sortedForTable(){
+      const key = sortKey.value;
+      if(key === '__order') return CH.slice();
+      const dir = sortDir.value === 'asc' ? 1 : -1;
+      return CH.slice().sort((a,b) => {
+        const av = displayValue(a.id,key);
+        const bv = displayValue(b.id,key);
+        const an = numericValue(av);
+        const bn = numericValue(bv);
+        if(Number.isFinite(an) || Number.isFinite(bn)){
+          const aa = Number.isFinite(an) ? an : -999999;
+          const bb = Number.isFinite(bn) ? bn : -999999;
+          if(aa !== bb) return (aa - bb) * dir;
+        }
+        return String(av).localeCompare(String(bv),'ja') * dir;
+      });
+    }
+
+    function draw(){
+      const canvas = cv, ctx = canvas.getContext('2d'), w = canvas.width, h = canvas.height, cx = w/2, cy = h/2+12, r = 180;
+      ctx.clearRect(0,0,w,h); ctx.fillStyle='#fff'; ctx.fillRect(0,0,w,h); grid(ctx,cx,cy,r);
+      [...document.querySelectorAll('#checks input:checked')].map(x=>x.value).forEach((id,i)=>{
+        const ch = CH.find(x=>x.id===id); if(!ch) return;
+        const vals = AB.map(k=>num(SM[id]?.[k]));
+        line(ctx,cx,cy,r,vals,col(ch.image_color)); legend(ctx,ch,col(ch.image_color),i);
+      });
+    }
+    function ang(i){return -Math.PI/2+Math.PI*2*i/AB.length}
+    function poly(ctx,cx,cy,r){ctx.beginPath();AB.forEach((_,i)=>{let a=ang(i),x=cx+Math.cos(a)*r,y=cy+Math.sin(a)*r;if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y)});ctx.closePath();ctx.stroke()}
+    function grid(ctx,cx,cy,r){ctx.strokeStyle='#d8d8dc';ctx.fillStyle='#666';ctx.lineWidth=1;ctx.font='12px sans-serif';for(let l=1;l<=5;l++){poly(ctx,cx,cy,r*l/5);ctx.textAlign='left';ctx.textBaseline='middle';ctx.fillText(String(l*4),cx+6,cy-r*l/5)}AB.forEach((k,i)=>{let a=ang(i),x=cx+Math.cos(a)*r,y=cy+Math.sin(a)*r;ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(x,y);ctx.stroke();let lx=cx+Math.cos(a)*(r+30),ly=cy+Math.sin(a)*(r+30);ctx.textAlign=lx<cx-10?'right':lx>cx+10?'left':'center';ctx.textBaseline=ly<cy?'bottom':'top';ctx.fillText(k,lx,ly)})}
+    function line(ctx,cx,cy,r,vals,color){ctx.beginPath();vals.forEach((v,i)=>{let sv=Math.max(0,Math.min(STATUS_MAX,Number(v||0)));let a=ang(i),rr=r*sv/STATUS_MAX,x=cx+Math.cos(a)*rr,y=cy+Math.sin(a)*rr;if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y)});ctx.closePath();let R=rgb(color)||{r:153,g:153,b:153};ctx.fillStyle=`rgba(${R.r},${R.g},${R.b},0.14)`;ctx.strokeStyle=color;ctx.lineWidth=2;ctx.fill();ctx.stroke()}
+    function legend(ctx,ch,color,i){let x=24,y=24+i*22;ctx.fillStyle=color;ctx.fillRect(x,y-10,12,12);ctx.fillStyle='#222';ctx.font='13px sans-serif';ctx.textAlign='left';ctx.textBaseline='middle';ctx.fillText(ch.name||'名前未設定',x+18,y-4)}
+
+    function cellClass(k, ch, chars){
+      if(!highlightExtremes.checked) return '';
+      const nums = chars.map(ca => ({id:ca.id, n:numericValue(displayValue(ca.id,k))})).filter(x => Number.isFinite(x.n));
+      if(nums.length < 2) return '';
+      const max = Math.max(...nums.map(x=>x.n));
+      const min = Math.min(...nums.map(x=>x.n));
+      if(max === min) return '';
+      const n = numericValue(displayValue(ch.id,k));
+      if(!Number.isFinite(n)) return '';
+      if(n === max) return ' class="stat-high" title="この項目で一番高い値"';
+      if(n === min) return ' class="stat-low" title="この項目で一番低い値"';
+      return '';
+    }
+
+    function renderTable(){
+      if(!CH.length){ tw.innerHTML='<p class="note">キャラクターがありません。</p>'; return; }
+      const chars = sortedForTable();
+      const head = `<thead><tr><th class="sticky-col">項目</th>${chars.map(ch=>{let cc=col(ch.image_color),em=firstEmoji(ch.emoji);return `<th class="character-col"><span style="color:${cc};font-weight:bold">${e(ch.name||'名前未設定')}</span> <span>${e(em)}</span></th>`}).join('')}</tr></thead>`;
+      const body = SG.map(g => {
+        const keys = g.keys.filter(k => !(hideDefaults.checked && isDefaultRow(k, chars)));
+        if(!keys.length) return '';
+        return `<tr class="group-row"><th class="sticky-col">${e(g.title)}</th>${chars.map(()=>'<td></td>').join('')}</tr>` + keys.map(k => {
+          return `<tr><th class="sticky-col">${e(k)}</th>${chars.map(ch => {
+            const val = displayValue(ch.id,k) || '—';
+            return `<td${cellClass(k,ch,chars)}>${e(val)}</td>`;
+          }).join('')}</tr>`;
+        }).join('');
+      }).join('');
+      tw.innerHTML = `<table>${head}<tbody>${body}</tbody></table>`;
+    }
+
+    init().catch(x => tw.innerHTML='<p class="note">読み込み失敗：'+e(x.message)+'</p>');
+  </script>
+</body>
+</html>
