@@ -1990,3 +1990,12 @@ button{
   color:var(--muted);
   font-size:12px;
 }
+
+
+/* v130: GPT fixes - ordering controls, mobile question cards, timeline mobile polish */
+.sort-controls{display:flex;gap:6px;justify-content:flex-end;margin-top:10px;position:relative;z-index:2}.sort-btn{min-height:32px!important;padding:4px 10px!important;font-size:13px!important}.sort-btn:disabled{opacity:.35;cursor:not-allowed}.mobile-compare{display:none}.muted-dash{color:var(--muted)}
+@media screen and (max-width:800px){
+  .compare-desktop{display:none!important}.mobile-compare{display:grid;gap:14px}.mobile-compare-group{display:grid;gap:10px}.mobile-compare-group h3{font-size:17px;margin:8px 0 0}.mobile-question-card{background:rgba(255,255,255,.74);border:1px solid rgba(255,255,255,.9);border-radius:18px;padding:12px;box-shadow:var(--glass-shadow-soft)}.mobile-question-card h4{margin:0 0 10px;font-size:14px;line-height:1.45;color:var(--text)}.mobile-answer-list{display:grid;gap:8px}.mobile-answer{--c:#999;border-left:5px solid var(--c);background:rgba(255,255,255,.88);border-radius:14px;padding:9px}.mobile-answer-head{display:flex;align-items:center;gap:8px;margin-bottom:6px}.mobile-answer-face{width:28px;height:28px;border-radius:9px;background:var(--c);display:grid;place-items:center;overflow:hidden;flex:0 0 auto}.mobile-answer-face img{width:100%;height:100%;object-fit:contain}.mobile-answer-body{white-space:pre-wrap;line-height:1.6;font-size:14px;color:var(--text)}
+  .timeline-mobile-year-title{position:static!important;top:auto!important}.timeline-mobile-year{overflow:visible!important}.timeline-mobile-card{display:block!important}.timeline-mobile-card textarea{display:block!important;position:static!important;margin-top:8px!important}.timeline-mobile-card-head{position:static!important;z-index:auto!important}.timeline-mobile-year-cards{gap:10px!important}
+  .chart-box canvas{max-width:100%;height:auto}.layout-two{grid-template-columns:1fr!important}.compare-list{max-height:none!important}
+}

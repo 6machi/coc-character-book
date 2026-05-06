@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>時系列</title>
-  <link rel="stylesheet" href="./style.css?v=123">
+  <link rel="stylesheet" href="./style.css?v=130">
   <style>
     .timeline-panel {
       padding: 18px;
@@ -300,8 +300,8 @@
   </main>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="./config.js?v=121"></script>
-  <script src="./common.js?v=121"></script>
+  <script src="./config.js?v=130"></script>
+  <script src="./common.js?v=130"></script>
   <script>initSiteTitle();</script>
 
   <script>
@@ -317,9 +317,10 @@
       const [charactersResult, entriesResult] = await Promise.all([
         sb
           .from("characters")
-          .select("id,name,furigana,emoji,icon_url,image_color,basic,created_at")
+          .select("id,name,furigana,emoji,icon_url,image_color,basic,created_at,sort_order")
           .eq("team_id", teamData.id)
-          .order("created_at", { ascending: false }),
+          .order("sort_order", { ascending: true, nullsFirst:false })
+          .order("created_at", { ascending: true }),
         sb
           .from("timeline_entries")
           .select("*")
@@ -328,13 +329,12 @@
       if (charactersResult.error) throw charactersResult.error;
       if (entriesResult.error) throw entriesResult.error;
 
-      timelineCharacters = (charactersResult.data || [])
+      timelineCharacters = sortedCharacters(charactersResult.data || [])
         .map(character => ({
           ...character,
           currentAge: getCharacterAge(character)
         }))
-        .filter(character => Number.isFinite(character.currentAge))
-        .sort((a, b) => b.currentAge - a.currentAge);
+        .filter(character => Number.isFinite(character.currentAge));
 
       const availableIds = new Set(timelineCharacters.map(character => character.id));
       selectedTimelineCharacters = new Set([...selectedTimelineCharacters].filter(id => availableIds.has(id)));

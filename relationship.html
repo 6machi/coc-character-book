@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>相関図</title>
-  <link rel="stylesheet" href="./style.css?v=123">
+  <link rel="stylesheet" href="./style.css?v=130">
   <style>
     .relationship-panel{padding:18px}
     .relationship-toolbar{
@@ -367,8 +367,8 @@
   </dialog>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="./config.js?v=121"></script>
-  <script src="./common.js?v=121"></script>
+  <script src="./config.js?v=130"></script>
+  <script src="./common.js?v=130"></script>
   <script>initSiteTitle();</script>
   <script>
     let relationshipCharacters = [];
@@ -383,7 +383,7 @@
       const teamData = await team();
 
       const [charactersResult, relationsResult, positionsResult] = await Promise.all([
-        sb.from("characters").select("id,name,furigana,emoji,icon_url,image_color,created_at").eq("team_id", teamData.id).order("created_at", { ascending:false }),
+        sb.from("characters").select("id,name,furigana,emoji,icon_url,image_color,created_at,sort_order").eq("team_id", teamData.id).order("sort_order", { ascending:true, nullsFirst:false }).order("created_at", { ascending:true }),
         sb.from("relationship_relations").select("*").eq("team_id", teamData.id).order("created_at", { ascending:true }),
         sb.from("relationship_positions").select("*")
       ]);
