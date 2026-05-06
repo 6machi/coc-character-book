@@ -189,6 +189,38 @@ async function checkRowUnchanged(table, idColumn, idValue, knownUpdatedAt, label
   }
   return true;
 }
-async function notifySaved(messageEl, text='Supabaseに保存しました'){
+async function notifySaved(messageEl, text='保存しました'){
   if(messageEl) messageEl.textContent = text;
+}
+
+
+/* v140: unsaved-change warning helpers */
+let __COCBOOK_UNSAVED__ = false;
+function setUnsavedChanges(flag=true){
+  __COCBOOK_UNSAVED__ = !!flag;
+  document.body.classList.toggle('has-unsaved', __COCBOOK_UNSAVED__);
+}
+function clearUnsavedChanges(){
+  setUnsavedChanges(false);
+}
+window.addEventListener('beforeunload', function(event){
+  if(!__COCBOOK_UNSAVED__) return;
+  event.preventDefault();
+  event.returnValue = '';
+});
+document.addEventListener('click', function(event){
+  const link = event.target.closest && event.target.closest('a[href]');
+  if(!link || !__COCBOOK_UNSAVED__) return;
+  const href = link.getAttribute('href') || '';
+  if(href.startsWith('#') || link.target === '_blank') return;
+  const ok = confirm('保存していない変更があります。このまま移動すると変更が消える可能性があります。移動しますか？');
+  if(!ok) event.preventDefault();
+});
+function bindUnsavedInputs(root=document){
+  root.querySelectorAll('input, textarea, select').forEach(el=>{
+    if(el.dataset.unsavedBound === '1') return;
+    el.dataset.unsavedBound = '1';
+    el.addEventListener('input', () => setUnsavedChanges(true));
+    el.addEventListener('change', () => setUnsavedChanges(true));
+  });
 }

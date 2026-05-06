@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>時系列</title>
-  <link rel="stylesheet" href="./style.css?v=139">
+  <link rel="stylesheet" href="./style.css?v=140">
   <style>
     .timeline-panel {
       padding: 18px;
@@ -273,11 +273,8 @@
 
   <main>
     <section class="panel timeline-panel">
-      <div class="page-title-row"><h2>時系列</h2><span class="info-wrap"><button class="info-button" type="button" aria-label="時系列の説明"><svg class="info-svg" viewBox="0 0 1200 1200" aria-hidden="true" focusable="false"><path d="M600 20C279.7 20 20 279.7 20 600s259.7 580 580 580 580-259.7 580-580S920.3 20 600 20zm0 70c281.6 0 510 228.4 510 510s-228.4 510-510 510S90 881.6 90 600 318.4 90 600 90z"/><circle cx="600" cy="285" r="100"/><rect x="500" y="430" width="200" height="520" rx="95"/></svg></button><span class="info-pop">年表<br>キャラクターの年齢をもとに「〇〇年前」を自動表示します。<br>各セルには出来事を直接入力できます。<br>キャラクターを追加・編集した後は、「読み込み」ボタンで最新情報を反映してください。</span></span></div>
+      <div class="page-title-row"><h2>時系列</h2><span class="info-wrap"><button class="info-button" type="button" aria-label="時系列の説明"><svg class="info-svg" viewBox="0 0 1200 1200" aria-hidden="true" focusable="false"><path d="M600 20C279.7 20 20 279.7 20 600s259.7 580 580 580 580-259.7 580-580S920.3 20 600 20zm0 70c281.6 0 510 228.4 510 510s-228.4 510-510 510S90 881.6 90 600 318.4 90 600 90z"/><circle cx="600" cy="285" r="100"/><rect x="500" y="430" width="200" height="520" rx="95"/></svg></button><span class="info-pop">キャラクターの年齢をもとに「〇〇年前」を自動表示します。<br>各セルには出来事を直接入力し保存する形です。保存を忘れずに！</span></span></div>
       <div class="timeline-toolbar">
-        <button onclick="saveTimeline()">保存する</button>
-        <button class="secondary-button" onclick="toggleEmpty()">空欄を薄くする/戻す</button>
-        <button class="secondary-button" onclick="toggleCompact()">コンパクト/標準</button>
         <button class="secondary-button" onclick="loadTimeline()">再読み込み</button>
         <span id="message" class="timeline-message">読み込み中...</span>
       </div>
@@ -287,7 +284,6 @@
       <div class="page-title-row"><h2>表示キャラクター</h2></div>
       <div class="timeline-filter-actions">
         <button class="secondary-button" onclick="selectAllTimelineCharacters()">全員表示</button>
-        <button class="secondary-button" onclick="clearTimelineCharacters()">全員非表示</button>
       </div>
       <div id="timelineCharacterFilter" class="timeline-filter-list"></div>
     </section>
@@ -297,11 +293,18 @@
     </section>
 
     <section class="timeline-mobile-list" id="timelineMobileList"></section>
+    <section class="timeline-save-bottom">
+      <div>
+        <button onclick="saveTimeline()">時系列を保存する</button>
+        <div class="timeline-save-hint">記入した内容は、このボタンで保存されます。</div>
+      </div>
+    </section>
   </main>
+  <div class="unsaved-pill">未保存の変更があります</div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="./config.js?v=139"></script>
-  <script src="./common.js?v=139"></script>
+  <script src="./config.js?v=140"></script>
+  <script src="./common.js?v=140"></script>
   <script>initSiteTitle();</script>
 
   <script>
@@ -484,6 +487,7 @@
       timelineDirtyKeys.add(key);
       const message = document.getElementById("message");
       if(message) message.textContent = "未保存の変更があります";
+      setUnsavedChanges(true);
     }
 
     function collectTimelineEntries() {
@@ -560,7 +564,8 @@
         return;
       }
 
-      document.getElementById("message").textContent = "Supabaseに保存しました";
+      document.getElementById("message").textContent = "保存しました";
+      clearUnsavedChanges();
       await loadTimeline();
     }
 

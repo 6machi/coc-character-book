@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>相関図</title>
-  <link rel="stylesheet" href="./style.css?v=139">
+  <link rel="stylesheet" href="./style.css?v=140">
   <style>
     .relationship-panel{padding:18px}
     .relationship-toolbar{
@@ -554,8 +554,8 @@
   </dialog>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="./config.js?v=139"></script>
-  <script src="./common.js?v=139"></script>
+  <script src="./config.js?v=140"></script>
+  <script src="./common.js?v=140"></script>
   <script>initSiteTitle();</script>
   <script>
     let relationshipCharacters = [];
@@ -830,7 +830,14 @@
         const toColor = characterColor(to);
         return `
           <div class="relationship-list-item relation-edit-card" style="--from:${fromColor};--to:${toColor};">
-            <span>${e(from?.name || "?")} → ${e(to?.name || "?")}<br><small>${typeLabel}${detailMark} / ${e(r.label || "呼び方未設定")}</small></span>
+            <span>
+              <span class="relationship-relation-title">
+                ${characterFace(from, "relationship-relation-face")}
+                <span>${e(from?.name || "?")} → ${e(to?.name || "?")}</span>
+                ${characterFace(to, "relationship-relation-face")}
+              </span>
+              <small>${typeLabel}${detailMark} / ${e(r.label || "呼び方未設定")}</small>
+            </span>
             <button class="secondary-button relationship-small-btn" onclick="openRelationEditor('${r.id}')">編集</button>
           </div>
         `;
@@ -904,6 +911,7 @@
       drag.node.removeEventListener("pointerup", endDrag);
       drag = null;
       message.textContent = "配置を変更しました。保存できます。";
+      setUnsavedChanges(true);
     }
 
     function nodeCenter(id){
@@ -939,7 +947,7 @@
         const hasOut = relations.some(r => r.from_character_id === centerId);
         const hasIn = relations.some(r => r.to_character_id === centerId);
         const isReciprocal = hasOut && hasIn;
-        const laneGap = isMobileRelationship() ? 10 : 14;
+        const laneGap = isMobileRelationship() ? 8 : 12;
 
         const centerPoint = nodeCenter(centerId);
         const otherPoint = nodeCenter(otherId);
@@ -1100,7 +1108,8 @@
       relationText.value = "";
       relationDetail.value = "";
       await loadAll();
-      message.textContent = "関係線をSupabaseに保存しました。";
+      clearUnsavedChanges();
+      message.textContent = "関係線を保存しました。";
     }
 
     function openRelationEditor(id){
@@ -1153,7 +1162,8 @@
       relationDialog.close();
       editingRelationId = null;
       await loadAll();
-      message.textContent = "関係線をSupabaseに保存しました。";
+      clearUnsavedChanges();
+      message.textContent = "関係線を保存しました。";
     }
 
     async function deleteEditingRelation(){
@@ -1220,7 +1230,8 @@
         return;
       }
       await loadAll();
-      message.textContent = "配置をSupabaseに保存しました";
+      clearUnsavedChanges();
+      message.textContent = "配置を保存しました";
     }
 
     function arrangeAround(centerId){
@@ -1294,5 +1305,6 @@
       document.getElementById("message").textContent = "読み込みに失敗しました：" + error.message;
     });
   </script>
+<div class="unsaved-pill">未保存の変更があります</div>
 </body>
 </html>

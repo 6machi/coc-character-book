@@ -2030,3 +2030,105 @@ button{
 @media(max-width:700px){
   .job-detail-preview{-webkit-line-clamp:4;}
 }
+
+
+/* v140 final polish */
+.test-notice{
+  display:grid;
+  gap:6px;
+  padding:14px 16px;
+  border-radius:18px;
+  background:linear-gradient(135deg,rgba(255,255,255,.78),rgba(239,246,255,.72));
+  border:1px solid rgba(255,255,255,.92);
+  box-shadow:var(--glass-shadow-soft);
+  color:var(--text);
+  margin-bottom:14px;
+}
+.test-notice b{font-size:15px}
+.test-notice p{margin:0;color:var(--muted);font-size:13px;line-height:1.7}
+.unsaved-pill{
+  display:none;
+  position:fixed;
+  right:14px;
+  bottom:14px;
+  z-index:90;
+  padding:9px 12px;
+  border-radius:999px;
+  background:#fff8e8;
+  border:1px solid #ead7aa;
+  box-shadow:0 12px 32px rgba(70,80,120,.14);
+  color:#7a5a18;
+  font-size:12px;
+  font-weight:900;
+}
+body.has-unsaved .unsaved-pill{display:block}
+.sort-controls{
+  display:flex;
+  align-items:center;
+  justify-content:flex-end;
+  gap:5px;
+  margin-top:8px;
+}
+.sort-controls::before{
+  content:"並び替え";
+  color:var(--muted);
+  font-size:11px;
+  font-weight:900;
+  margin-right:2px;
+}
+.sort-btn{
+  min-width:30px;
+}
+.timeline-save-bottom{
+  margin:14px 0 0;
+  display:flex;
+  justify-content:center;
+}
+.timeline-save-bottom button{
+  min-width:220px;
+}
+.timeline-save-hint{
+  margin-top:8px;
+  text-align:center;
+  color:var(--muted);
+  font-size:12px;
+}
+.relationship-list-item.relation-edit-card{
+  font-size:13px!important;
+  line-height:1.35;
+  padding:10px 11px!important;
+}
+.relationship-list-item.relation-edit-card .relationship-relation-title{
+  display:flex;
+  align-items:center;
+  gap:6px;
+  font-size:13px;
+  font-weight:900;
+  color:#303746;
+}
+.relationship-list-item.relation-edit-card small{
+  display:block;
+  margin-top:3px;
+  font-size:12px!important;
+  line-height:1.35;
+}
+.relationship-relation-face{
+  width:22px;
+  height:22px;
+  border-radius:7px;
+  display:inline-grid;
+  place-items:center;
+  background:var(--c);
+  overflow:hidden;
+  flex:0 0 auto;
+  font-size:13px;
+}
+.relationship-relation-face img{
+  width:100%;
+  height:100%;
+  object-fit:contain;
+}
+@media(max-width:760px){
+  .timeline-save-bottom button{width:100%}
+  .sort-controls{justify-content:flex-start}
+}

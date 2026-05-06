@@ -1,1 +1,1 @@
-coc-character-book v139 collaborative safety patch
+coc-character-book v140 final sharing polish

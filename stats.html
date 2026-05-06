@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ステータス</title>
-  <link rel="stylesheet" href="./style.css?v=139">
+  <link rel="stylesheet" href="./style.css?v=140">
   <style>
     .stats-controls{
       display:grid;
@@ -55,7 +55,7 @@
         <div class="ranking-controls">
           <div><label for="rankingKey">項目</label><select id="rankingKey" onchange="renderRanking()"></select></div>
           <div><label for="rankingDir">順番</label><select id="rankingDir" onchange="renderRanking()"><option value="desc">高い順</option><option value="asc">低い順</option></select></div>
-          <p class="note">表は登録順のまま、ランキングだけ選んだ項目順で表示します。</p>
+          
         </div>
         <div id="rankingList" class="ranking-list"></div>
       </div>
@@ -75,8 +75,8 @@
     </section>
   </main>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="./config.js?v=139"></script>
-  <script src="./common.js?v=139"></script>
+  <script src="./config.js?v=140"></script>
+  <script src="./common.js?v=140"></script>
   <script>initSiteTitle();</script>
   <script>
     const STATUS_MAX = 20;
