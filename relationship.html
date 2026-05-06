@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>相関図</title>
-  <link rel="stylesheet" href="./style.css?v=136">
+  <link rel="stylesheet" href="./style.css?v=139">
   <style>
     .relationship-panel{padding:18px}
     .relationship-toolbar{
@@ -554,13 +554,14 @@
   </dialog>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="./config.js?v=137"></script>
-  <script src="./common.js?v=137"></script>
+  <script src="./config.js?v=139"></script>
+  <script src="./common.js?v=139"></script>
   <script>initSiteTitle();</script>
   <script>
     let relationshipCharacters = [];
     let relationshipRelations = [];
     let relationshipPositions = {};
+    let relationshipPositionMeta = {};
     let relationshipRenderPositions = {};
     let drag = null;
     let editingRelationId = null;
@@ -588,7 +589,11 @@
         relationshipCenterId = relationshipCharacters[0]?.id || null;
       }
       relationshipPositions = {};
-      (positionsResult.data || []).forEach(p => relationshipPositions[p.character_id] = { x:p.x, y:p.y });
+      relationshipPositionMeta = {};
+      (positionsResult.data || []).forEach(p => {
+        relationshipPositions[p.character_id] = { x:p.x, y:p.y };
+        relationshipPositionMeta[p.character_id] = p.updated_at || "";
+      });
 
       ensureDefaultPositions();
       initSelects();
@@ -934,7 +939,7 @@
         const hasOut = relations.some(r => r.from_character_id === centerId);
         const hasIn = relations.some(r => r.to_character_id === centerId);
         const isReciprocal = hasOut && hasIn;
-        const laneGap = isMobileRelationship() ? 28 : 38;
+        const laneGap = isMobileRelationship() ? 10 : 14;
 
         const centerPoint = nodeCenter(centerId);
         const otherPoint = nodeCenter(otherId);
@@ -996,11 +1001,11 @@
 
           // ラベルも左右に分ける。双方向の2ラベルが重ならないよう、線方向にも少しずらす。
           const isFromCenter = r.from_character_id === centerId;
-          const labelAlong = isReciprocal ? (isFromCenter ? -34 : 34) : 0;
+          const labelAlong = isReciprocal ? (isFromCenter ? -18 : 18) : 0;
           const labelBaseX = (start.x + end.x) / 2;
           const labelBaseY = (start.y + end.y) / 2;
-          const labelX = labelBaseX + baseNx * (offset + Math.sign(offset || 1) * 10) + baseTx * labelAlong;
-          const labelY = labelBaseY + baseNy * (offset + Math.sign(offset || 1) * 10) + baseTy * labelAlong;
+          const labelX = labelBaseX + baseNx * (offset + Math.sign(offset || 1) * 5) + baseTx * labelAlong;
+          const labelY = labelBaseY + baseNy * (offset + Math.sign(offset || 1) * 5) + baseTy * labelAlong;
           const label = document.createElement("div");
           label.className = "relationship-label" + (r.detail ? " has-detail" : "") + (isReciprocal ? " reciprocal-label" : "");
           label.style.left = labelX + "px";
@@ -1084,18 +1089,18 @@
         to_character_id: toCharacter.value,
         type: relationType.value,
         label: relationText.value.trim(),
-        detail: relationDetail.value.trim()
+        detail: relationDetail.value.trim(),
+        updated_at: new Date().toISOString()
       };
       const result = await sb.from("relationship_relations").insert(payload).select("*").single();
       if(result.error){
         message.textContent = "追加に失敗しました：" + result.error.message;
         return;
       }
-      relationshipRelations.push(result.data);
       relationText.value = "";
       relationDetail.value = "";
-      renderAll();
-      message.textContent = "関係線を追加しました。";
+      await loadAll();
+      message.textContent = "関係線をSupabaseに保存しました。";
     }
 
     function openRelationEditor(id){
@@ -1118,6 +1123,18 @@
         return;
       }
 
+      const current = await sb.from("relationship_relations").select("updated_at").eq("id", editingRelationId).maybeSingle();
+      if(current.error){
+        message.textContent = "保存前確認に失敗しました：" + current.error.message;
+        return;
+      }
+      if(relation.updated_at && current.data?.updated_at && !sameTimestamp(current.data.updated_at, relation.updated_at)){
+        alert(conflictMessage("この関係性"));
+        relationDialog.close();
+        await loadAll();
+        return;
+      }
+
       const payload = {
         from_character_id: editFrom.value,
         to_character_id: editTo.value,
@@ -1133,25 +1150,39 @@
         return;
       }
 
-      Object.assign(relation, result.data);
       relationDialog.close();
       editingRelationId = null;
-      renderAll();
-      message.textContent = "関係線を編集しました。";
+      await loadAll();
+      message.textContent = "関係線をSupabaseに保存しました。";
     }
 
     async function deleteEditingRelation(){
       if(!editingRelationId) return;
+      const relation = relationshipRelations.find(r => r.id === editingRelationId);
       if(!confirm("この関係線を削除しますか？")) return;
+
+      if(relation?.updated_at){
+        const current = await sb.from("relationship_relations").select("updated_at").eq("id", editingRelationId).maybeSingle();
+        if(current.error){
+          message.textContent = "削除前確認に失敗しました：" + current.error.message;
+          return;
+        }
+        if(current.data?.updated_at && !sameTimestamp(current.data.updated_at, relation.updated_at)){
+          alert(conflictMessage("この関係性"));
+          relationDialog.close();
+          await loadAll();
+          return;
+        }
+      }
+
       const result = await sb.from("relationship_relations").delete().eq("id", editingRelationId);
       if(result.error){
         message.textContent = "削除に失敗しました：" + result.error.message;
         return;
       }
-      relationshipRelations = relationshipRelations.filter(r => r.id !== editingRelationId);
       relationDialog.close();
       editingRelationId = null;
-      renderAll();
+      await loadAll();
       message.textContent = "関係線を削除しました。";
     }
 
@@ -1164,12 +1195,32 @@
         updated_at: new Date().toISOString()
       }));
 
+      for(const row of rows){
+        const known = relationshipPositionMeta[row.character_id] || "";
+        const current = await sb.from("relationship_positions").select("updated_at").eq("character_id", row.character_id).maybeSingle();
+        if(current.error){
+          message.textContent = "配置保存前確認に失敗しました：" + current.error.message;
+          return;
+        }
+        if(known && current.data?.updated_at && !sameTimestamp(current.data.updated_at, known)){
+          alert(conflictMessage("相関図の配置"));
+          await loadAll();
+          return;
+        }
+        if(!known && current.data?.updated_at){
+          alert(conflictMessage("相関図の配置"));
+          await loadAll();
+          return;
+        }
+      }
+
       const result = await sb.from("relationship_positions").upsert(rows, { onConflict:"character_id" });
       if(result.error){
         message.textContent = "保存に失敗しました：" + result.error.message;
         return;
       }
-      message.textContent = "配置を保存しました";
+      await loadAll();
+      message.textContent = "配置をSupabaseに保存しました";
     }
 
     function arrangeAround(centerId){

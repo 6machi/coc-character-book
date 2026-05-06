@@ -168,3 +168,27 @@ window.av = function(ch, cls='avatar'){
   }
   return `<div class="${cls}-emoji" style="--c:${cc};">${e(em)}</div>`;
 };
+
+
+/* v139: collaborative editing helpers */
+function conflictMessage(label){
+  return `${label || 'この項目'}は、他の人が先に更新しています。上書きを防ぐため保存を止めました。ページを再読み込みして最新内容を確認してください。`;
+}
+function sameTimestamp(a,b){
+  if(!a && !b) return true;
+  if(!a || !b) return false;
+  return new Date(a).getTime() === new Date(b).getTime();
+}
+async function checkRowUnchanged(table, idColumn, idValue, knownUpdatedAt, label){
+  if(!knownUpdatedAt) return true;
+  const {data,error}=await sb.from(table).select('updated_at').eq(idColumn,idValue).maybeSingle();
+  if(error) throw error;
+  if(data && data.updated_at && !sameTimestamp(data.updated_at, knownUpdatedAt)){
+    alert(conflictMessage(label));
+    return false;
+  }
+  return true;
+}
+async function notifySaved(messageEl, text='Supabaseに保存しました'){
+  if(messageEl) messageEl.textContent = text;
+}

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>時系列</title>
-  <link rel="stylesheet" href="./style.css?v=135">
+  <link rel="stylesheet" href="./style.css?v=139">
   <style>
     .timeline-panel {
       padding: 18px;
@@ -300,13 +300,15 @@
   </main>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="./config.js?v=135"></script>
-  <script src="./common.js?v=135"></script>
+  <script src="./config.js?v=139"></script>
+  <script src="./common.js?v=139"></script>
   <script>initSiteTitle();</script>
 
   <script>
     let timelineCharacters = [];
     let timelineEntries = {};
+    let timelineEntryMeta = {};
+    let timelineDirtyKeys = new Set();
     let selectedTimelineCharacters = new Set();
 
     async function loadTimeline() {
@@ -343,9 +345,13 @@
       }
 
       timelineEntries = {};
+      timelineEntryMeta = {};
+      timelineDirtyKeys = new Set();
       (entriesResult.data || []).forEach(row => {
         if (!timelineEntries[row.character_id]) timelineEntries[row.character_id] = {};
+        if (!timelineEntryMeta[row.character_id]) timelineEntryMeta[row.character_id] = {};
         timelineEntries[row.character_id][row.years_ago] = row.text || "";
+        timelineEntryMeta[row.character_id][row.years_ago] = row.updated_at || "";
       });
 
       renderTimelineFilter();
@@ -460,47 +466,93 @@
               <span>${ageLabel}</span>
               <span class="relative">${yearsAgo}年前</span>
             </div>
-            <textarea placeholder="${isUnborn ? "未出生" : "この時期の出来事"}">${e(text)}</textarea>
+            <textarea data-original="${c(text)}" data-updated-at="${e(timelineEntryMeta?.[character.id]?.[yearsAgo] || "")}" oninput="markTimelineChanged(this)" placeholder="${isUnborn ? "未出生" : "この時期の出来事"}">${e(text)}</textarea>
           </div>
         </td>
       `;
     }
 
+    function timelineKey(characterId, yearsAgo){
+      return `${characterId}::${yearsAgo}`;
+    }
+
+    function markTimelineChanged(textarea){
+      const box = textarea.closest("[data-character][data-years-ago]");
+      if(!box) return;
+      const key = timelineKey(box.dataset.character, Number(box.dataset.yearsAgo));
+      textarea.dataset.dirty = "1";
+      timelineDirtyKeys.add(key);
+      const message = document.getElementById("message");
+      if(message) message.textContent = "未保存の変更があります";
+    }
+
     function collectTimelineEntries() {
-      const rows = [];
+      const map = new Map();
 
-      document.querySelectorAll(".timeline-cell").forEach(cell => {
-        const characterId = cell.dataset.character;
-        const yearsAgo = Number(cell.dataset.yearsAgo);
-        const text = cell.querySelector("textarea").value.trim();
-
+      document.querySelectorAll("[data-character][data-years-ago] textarea").forEach(textarea => {
+        const box = textarea.closest("[data-character][data-years-ago]");
+        const characterId = box.dataset.character;
+        const yearsAgo = Number(box.dataset.yearsAgo);
+        const key = timelineKey(characterId, yearsAgo);
+        if(!timelineDirtyKeys.has(key) && textarea.dataset.dirty !== "1") return;
         if (!characterId || !Number.isFinite(yearsAgo)) return;
 
-        rows.push({
+        map.set(key, {
           character_id: characterId,
           years_ago: yearsAgo,
-          text,
+          text: textarea.value.trim(),
+          original_updated_at: textarea.dataset.updatedAt || "",
           updated_at: new Date().toISOString()
         });
       });
 
-      return rows;
+      return [...map.values()];
+    }
+
+    async function assertTimelineUnchanged(rows){
+      for(const row of rows){
+        const {data,error} = await sb
+          .from("timeline_entries")
+          .select("updated_at")
+          .eq("character_id", row.character_id)
+          .eq("years_ago", row.years_ago)
+          .maybeSingle();
+        if(error) throw error;
+
+        const known = row.original_updated_at || "";
+        const current = data?.updated_at || "";
+        if(known && current && !sameTimestamp(current, known)){
+          throw new Error("他の人が同じ時系列セルを先に更新しています。上書きを防ぐため保存を止めました。ページを再読み込みしてください。");
+        }
+        if(!known && current){
+          throw new Error("他の人が同じ時系列セルを先に作成しています。上書きを防ぐため保存を止めました。ページを再読み込みしてください。");
+        }
+      }
     }
 
     async function saveTimeline() {
       document.getElementById("message").textContent = "保存中...";
 
-      collectMobileTimelineEntries();
       const rows = collectTimelineEntries();
 
       if (rows.length === 0) {
-        document.getElementById("message").textContent = "保存する行がありません";
+        document.getElementById("message").textContent = "保存する変更がありません";
         return;
       }
 
+      try{
+        await assertTimelineUnchanged(rows);
+      }catch(error){
+        console.error(error);
+        document.getElementById("message").textContent = error.message;
+        alert(error.message);
+        return;
+      }
+
+      const saveRows = rows.map(({original_updated_at, ...row}) => row);
       const { error } = await sb
         .from("timeline_entries")
-        .upsert(rows, { onConflict: "character_id,years_ago" });
+        .upsert(saveRows, { onConflict: "character_id,years_ago" });
 
       if (error) {
         console.error(error);
@@ -508,7 +560,7 @@
         return;
       }
 
-      document.getElementById("message").textContent = "保存しました";
+      document.getElementById("message").textContent = "Supabaseに保存しました";
       await loadTimeline();
     }
 
@@ -590,7 +642,7 @@
                   <span>${ageLabel}</span>
                 </div>
               </div>
-              <textarea placeholder="${isUnborn ? "未出生" : "この時期の出来事"}">${e(text)}</textarea>
+              <textarea data-original="${c(text)}" data-updated-at="${e(timelineEntryMeta?.[character.id]?.[yearsAgo] || "")}" oninput="markTimelineChanged(this)" placeholder="${isUnborn ? "未出生" : "この時期の出来事"}">${e(text)}</textarea>
             </div>
           `;
         }).join("");

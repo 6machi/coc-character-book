@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="ja"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>キャラクター</title><link rel="stylesheet" href="./style.css?v=135"></head><body><header><div class="header-inner"><div><h1 class="site-brand" id="siteTitle">自陣キャラ図鑑</h1></div><div class="header-buttons"><a class="header-button" href="./compare.html">キャラQ&A</a><a class="header-button" href="./stats.html">ステータス</a><a class="header-button" href="./timeline.html">時系列</a><a class="header-button" href="./relationship.html">相関図</a></div></div></header><main><section class="panel"><div class="page-title-row"><h2>キャラクター</h2><span class="info-wrap"><button class="info-button" type="button" aria-label="キャラクターの説明"><svg class="info-svg" viewBox="0 0 1200 1200" aria-hidden="true" focusable="false"><path d="M600 20C279.7 20 20 279.7 20 600s259.7 580 580 580 580-259.7 580-580S920.3 20 600 20zm0 70c281.6 0 510 228.4 510 510s-228.4 510-510 510S90 881.6 90 600 318.4 90 600 90z"/><circle cx="600" cy="285" r="100"/><rect x="500" y="430" width="200" height="520" rx="95"/></svg></button><span class="info-pop">一覧ページ<br>登録したキャラクターの基本情報を確認・編集できます。ここで登録した年齢や所属などの情報は、時系列ページなどにも反映されます。</span></span></div><div id="list" class="character-list"><p class="note">読み込み中...</p></div></section><details class="panel" id="addPanel"><summary id="sum">＋ キャラクターを追加する</summary><div class="form-content"><div id="form"></div><button id="saveBtn" type="button">保存する</button><button class="secondary-button" onclick="cancel()" id="cancelBtn" style="display:none">編集をやめる</button><p class="message" id="msg"></p></div></details><details class="panel"><summary>＋ 質問項目を追加する</summary><div class="form-content"><div class="form-grid"><div class="form-item full"><label>質問名</label><input id="qlabel"></div><div><label>カテゴリ</label><select id="qgroup"><option>基本プロフィール</option><option>好きなもの・日常</option><option>恋愛・嗜好</option><option>過去・価値観・物語</option><option>追加質問</option></select></div><div><label>入力形式</label><select id="qtype"><option value="text">短文</option><option value="textarea">長文</option><option value="number">数字</option></select></div></div><button id="addQuestionBtn" type="button">質問を追加する</button><p class="message" id="qmsg"></p></div></details></main><dialog id="dlg"><div id="modal"></div></dialog><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="./config.js?v=135"></script><script src="./common.js?v=135"></script>
+<!DOCTYPE html><html lang="ja"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>キャラクター</title><link rel="stylesheet" href="./style.css?v=139"></head><body><header><div class="header-inner"><div><h1 class="site-brand" id="siteTitle">自陣キャラ図鑑</h1></div><div class="header-buttons"><a class="header-button" href="./compare.html">キャラQ&A</a><a class="header-button" href="./stats.html">ステータス</a><a class="header-button" href="./timeline.html">時系列</a><a class="header-button" href="./relationship.html">相関図</a></div></div></header><main><section class="panel"><div class="page-title-row"><h2>キャラクター</h2><span class="info-wrap"><button class="info-button" type="button" aria-label="キャラクターの説明"><svg class="info-svg" viewBox="0 0 1200 1200" aria-hidden="true" focusable="false"><path d="M600 20C279.7 20 20 279.7 20 600s259.7 580 580 580 580-259.7 580-580S920.3 20 600 20zm0 70c281.6 0 510 228.4 510 510s-228.4 510-510 510S90 881.6 90 600 318.4 90 600 90z"/><circle cx="600" cy="285" r="100"/><rect x="500" y="430" width="200" height="520" rx="95"/></svg></button><span class="info-pop">一覧ページ<br>登録したキャラクターの基本情報を確認・編集できます。ここで登録した年齢や所属などの情報は、時系列ページなどにも反映されます。</span></span></div><div id="list" class="character-list"><p class="note">読み込み中...</p></div></section><details class="panel" id="addPanel"><summary id="sum">＋ キャラクターを追加する</summary><div class="form-content"><div id="form"></div><button id="saveBtn" type="button">保存する</button><button class="secondary-button" onclick="cancel()" id="cancelBtn" style="display:none">編集をやめる</button><p class="message" id="msg"></p></div></details><details class="panel"><summary>＋ 質問項目を追加する</summary><div class="form-content"><div class="form-grid"><div class="form-item full"><label>質問名</label><input id="qlabel"></div><div><label>カテゴリ</label><select id="qgroup"><option>基本プロフィール</option><option>好きなもの・日常</option><option>恋愛・嗜好</option><option>過去・価値観・物語</option><option>追加質問</option></select></div><div><label>入力形式</label><select id="qtype"><option value="text">短文</option><option value="textarea">長文</option><option value="number">数字</option></select></div></div><button id="addQuestionBtn" type="button">質問を追加する</button><p class="message" id="qmsg"></p></div></details></main><dialog id="dlg"><div id="modal"></div></dialog><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="./config.js?v=139"></script><script src="./common.js?v=139"></script>
   <script>initSiteTitle();</script><script>
 let CH=[],Q=[],edit=null,editStatsUpdatedAt=null;async function init(){try{Q=await qs();await load();renderForm()}catch(x){list.innerHTML='<p class="note">読み込み失敗：'+(x&&x.message?x.message:x)+'</p>'; console.error(x);}}async function load(){let t=await team();let r=await sb.from('characters').select('id,name,furigana,emoji,icon_url,image_color,basic,created_at,sort_order').eq('team_id',t.id).order('sort_order',{ascending:true,nullsFirst:false}).order('created_at',{ascending:true});if(r.error)throw r.error;CH=r.data||[];renderList()}function renderList(){if(!CH.length){list.innerHTML='<p class="note">まだキャラクターが登録されていません。</p>';return}list.innerHTML=CH.map((ch,i)=>{let cc=col(ch.image_color),b=ch.basic||{};return`<div class="card" style="--c:${cc}" onclick="openD('${ch.id}')"><div class="card-top">${av(ch)}<div><div class="name">${e(ch.name)}</div><div class="furigana">${e(ch.furigana)||'ふりがな未設定'}</div></div></div><div class="sub"><b>${e(jobShort(b))}</b> / ${e(b.age)||'年齢未設定'}歳<br>誕生日：${e(bd(b))}${jobDetailText(b)?`<div class="job-detail-preview">${e(jobDetailText(b))}</div>`:''}</div><div class="card-tags"><span class="info-chip"><span class="color-dot"></span>${e(ch.image_color)||'カラー未設定'}</span><span class="info-chip">${e(ch.emoji||'👤')}</span></div><div class="sort-controls" onclick="event.stopPropagation()"><button class="secondary-button sort-btn" ${i===0?'disabled':''} onclick="moveCharacter('${ch.id}',-1)">↑</button><button class="secondary-button sort-btn" ${i===CH.length-1?'disabled':''} onclick="moveCharacter('${ch.id}',1)">↓</button></div></div>`}).join('')}function field(q){
   if(q.key==='jobDetail')return`<div class="form-item full"><label>${e(q.label)}</label><textarea data-basic="${c(q.key)}" placeholder="所属部署・専門分野・前職など、長い説明はこちら"></textarea></div>`;
@@ -83,14 +83,24 @@ async function save(){
   let id = edit?.id;
 
   if(id){
-    // 共同編集用：編集中に他の人が同じキャラを保存していたら、上書きせず止める。
+    // 共同編集用：編集中に他の人が同じキャラ/ステータスを保存していたら、上書きせず止める。
     const current = await sb.from('characters').select('updated_at').eq('id', id).single();
     if(current.error) throw current.error;
-    if(edit?.updated_at && current.data?.updated_at && current.data.updated_at !== edit.updated_at){
-      msgEl.textContent = '他の人がこのキャラクターを更新しています。上書きを防ぐため保存を止めました。ページを再読み込みして内容を確認してください。';
-      alert('他の人がこのキャラクターを先に保存しています。上書きを防ぐため、いったん最新情報を読み込みます。');
+    if(edit?.updated_at && current.data?.updated_at && !sameTimestamp(current.data.updated_at, edit.updated_at)){
+      msgEl.textContent = conflictMessage('このキャラクター');
+      alert(conflictMessage('このキャラクター'));
       await load();
       return;
+    }
+    if(editStatsUpdatedAt){
+      const currentStats = await sb.from('stats').select('updated_at').eq('character_id', id).maybeSingle();
+      if(currentStats.error) throw currentStats.error;
+      if(currentStats.data?.updated_at && !sameTimestamp(currentStats.data.updated_at, editStatsUpdatedAt)){
+        msgEl.textContent = conflictMessage('このキャラクターのステータス');
+        alert(conflictMessage('このキャラクターのステータス'));
+        await load();
+        return;
+      }
     }
     let r = await sb.from('characters').update(payload).eq('id', id).select('id,updated_at').single();
     if(r.error) throw r.error;
@@ -113,17 +123,6 @@ async function save(){
     let u = await upIcon(f, id);
     let r = await sb.from('characters').update({icon_url:u, updated_at:new Date().toISOString()}).eq('id', id);
     if(r.error) throw r.error;
-  }
-
-  if(id && editStatsUpdatedAt){
-    const currentStats = await sb.from('stats').select('updated_at').eq('character_id', id).maybeSingle();
-    if(currentStats.error) throw currentStats.error;
-    if(currentStats.data?.updated_at && currentStats.data.updated_at !== editStatsUpdatedAt){
-      msgEl.textContent = '他の人がステータスを更新しています。上書きを防ぐため保存を止めました。';
-      alert('他の人がステータスを先に保存しています。上書きを防ぐため、いったん最新情報を読み込みます。');
-      await load();
-      return;
-    }
   }
 
   let sr = await sb.from('stats').upsert({
@@ -197,6 +196,7 @@ function cancel(){
     label: lab,
     type: typeEl.value,
     sort_order: Date.now(),
+    updated_at: new Date().toISOString(),
     show_in_form: true,
     show_in_compare: true
   });
