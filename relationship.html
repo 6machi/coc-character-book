@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>相関図</title>
-  <link rel="stylesheet" href="./style.css?v=130">
+  <link rel="stylesheet" href="./style.css?v=132">
   <style>
     .relationship-panel{padding:18px}
     .relationship-toolbar{
@@ -254,6 +254,27 @@
       }
     }
     @media(min-width:701px){.relationship-mobile-note{display:none!important}}
+
+    .relationship-visibility-tools{
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+      margin:10px 0 0;
+    }
+    .relationship-check{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      min-width:0;
+    }
+    .relationship-check input{width:18px;height:18px;accent-color:var(--accent,#242833)}
+    .relationship-lines-soft path{opacity:.76;transition:opacity .16s ease,stroke-width .16s ease}
+    .relationship-lines-soft path:hover{opacity:1;stroke-width:4!important}
+    .relationship-label{max-width:150px;overflow:hidden;text-overflow:ellipsis}
+    @media(max-width:700px){
+      .relationship-visibility-tools button{flex:1 1 120px}
+      .relationship-check{width:100%}
+    }
   </style>
 </head>
 <body>
@@ -272,7 +293,7 @@
 
   <main>
     <section class="panel relationship-panel">
-      <div class="page-title-row"><h2>相関図</h2><span class="info-wrap"><button class="info-button" type="button" aria-label="相関図の説明"><svg class="info-svg" viewBox="0 0 1200 1200" aria-hidden="true" focusable="false"><path d="M600 20C279.7 20 20 279.7 20 600s259.7 580 580 580 580-259.7 580-580S920.3 20 600 20zm0 70c281.6 0 510 228.4 510 510s-228.4 510-510 510S90 881.6 90 600 318.4 90 600 90z"/><circle cx="600" cy="285" r="100"/><rect x="500" y="430" width="200" height="520" rx="95"/></svg></button><span class="info-pop">相関図<br>キャラクターを自由に配置して、関係線を作成できます。線には短い表示メモと詳細メモを保存できます。詳細メモは線のラベルにカーソルを合わせると表示されます。キャラクターを追加・編集した後は、「読み込み」ボタンで最新情報を反映してください。</span></span></div>
+      <div class="page-title-row"><h2>相関図</h2><span class="info-wrap"><button class="info-button" type="button" aria-label="相関図の説明"><svg class="info-svg" viewBox="0 0 1200 1200" aria-hidden="true" focusable="false"><path d="M600 20C279.7 20 20 279.7 20 600s259.7 580 580 580 580-259.7 580-580S920.3 20 600 20zm0 70c281.6 0 510 228.4 510 510s-228.4 510-510 510S90 881.6 90 600 318.4 90 600 90z"/><circle cx="600" cy="285" r="100"/><rect x="500" y="430" width="200" height="520" rx="95"/></svg></button><span class="info-pop">相関図<br>キャラクターを自由に配置して、関係線を作成できます。線には「その人の呼び方」と詳細メモを保存できます。詳細メモは線のラベルにカーソルを合わせると表示されます。キャラクターを追加・編集した後は、「読み込み」ボタンで最新情報を反映してください。</span></span></div>
       <div class="relationship-toolbar">
         <div>
           <label for="fromCharacter">本人</label>
@@ -291,8 +312,8 @@
           </select>
         </div>
         <div>
-          <label for="relationText">短い表示メモ</label>
-          <input id="relationText" placeholder="例：かわいい / 頼りになる">
+          <label for="relationText">その人の呼び方</label>
+          <input id="relationText" placeholder="例：クララちゃん / レイモンドくん">
         </div>
         <button onclick="addRelation()">線を追加</button>
         <button class="secondary-button" onclick="saveAll()">保存</button>
@@ -300,7 +321,7 @@
 
       <div style="margin-top:10px;">
         <label for="relationDetail">詳細メモ</label>
-        <textarea id="relationDetail" rows="3" placeholder="例：初対面では怖そうだと思ったけど、話してみると意外と面倒見がいい。"></textarea>
+        <textarea id="relationDetail" rows="3" placeholder="例：その呼び方をしている理由、関係の詳細など。"></textarea>
       </div>
 
       <div class="relationship-toolbar secondary-row">
@@ -309,22 +330,26 @@
         <button class="secondary-button" onclick="loadAll()">読み込み</button>
         <span id="message" class="relationship-message">読み込み中...</span>
       </div>
-      <p class="relationship-mobile-note">スマホではカードが見切れないように自動でコンパクト配置します。配置の保存はPC表示で行うと安定します。</p>
+      <p class="relationship-mobile-note">スマホではカードが見切れないように自動でコンパクト配置します。表示したいキャラだけチェックできます。配置の保存はPC表示で行うと安定します。</p>
     </section>
 
     <section class="panel relationship-side">
       <div>
         <div class="page-title-row"><h2>キャラクター</h2><span class="info-wrap"><button class="info-button" type="button" aria-label="キャラクターの説明"><svg class="info-svg" viewBox="0 0 1200 1200" aria-hidden="true" focusable="false"><path d="M600 20C279.7 20 20 279.7 20 600s259.7 580 580 580 580-259.7 580-580S920.3 20 600 20zm0 70c281.6 0 510 228.4 510 510s-228.4 510-510 510S90 881.6 90 600 318.4 90 600 90z"/><circle cx="600" cy="285" r="100"/><rect x="500" y="430" width="200" height="520" rx="95"/></svg></button><span class="info-pop">相関図に表示するキャラクター一覧です。「中心にする」を押すと、そのキャラクターを中央にして他のキャラクターを周囲へ配置します。</span></span></div>
+        <div class="relationship-visibility-tools">
+          <button class="secondary-button relationship-small-btn" onclick="showAllCharacters()">全員表示</button>
+          <button class="secondary-button relationship-small-btn" onclick="hideAllCharacters()">全員非表示</button>
+        </div>
         <div class="relationship-list" id="characterList"></div>
       </div>
       <div>
-        <div class="page-title-row"><h2>関係線</h2><span class="info-wrap"><button class="info-button" type="button" aria-label="関係線の説明"><svg class="info-svg" viewBox="0 0 1200 1200" aria-hidden="true" focusable="false"><path d="M600 20C279.7 20 20 279.7 20 600s259.7 580 580 580 580-259.7 580-580S920.3 20 600 20zm0 70c281.6 0 510 228.4 510 510s-228.4 510-510 510S90 881.6 90 600 318.4 90 600 90z"/><circle cx="600" cy="285" r="100"/><rect x="500" y="430" width="200" height="520" rx="95"/></svg></button><span class="info-pop">作成済みの関係線一覧です。編集から、本人・相手・線の種類・短い表示メモ・詳細メモを変更できます。</span></span></div>
+        <div class="page-title-row"><h2>関係線</h2><span class="info-wrap"><button class="info-button" type="button" aria-label="関係線の説明"><svg class="info-svg" viewBox="0 0 1200 1200" aria-hidden="true" focusable="false"><path d="M600 20C279.7 20 20 279.7 20 600s259.7 580 580 580 580-259.7 580-580S920.3 20 600 20zm0 70c281.6 0 510 228.4 510 510s-228.4 510-510 510S90 881.6 90 600 318.4 90 600 90z"/><circle cx="600" cy="285" r="100"/><rect x="500" y="430" width="200" height="520" rx="95"/></svg></button><span class="info-pop">作成済みの関係線一覧です。編集から、本人・相手・線の種類・その人の呼び方・詳細メモを変更できます。</span></span></div>
         <div class="relationship-list" id="relationList"></div>
       </div>
     </section>
 
     <section class="relationship-canvas" id="canvas">
-      <svg id="relationshipSvg"></svg>
+      <svg id="relationshipSvg" class="relationship-lines-soft"></svg>
       <div id="labels"></div>
     </section>
   </main>
@@ -350,7 +375,7 @@
           </select>
         </div>
         <div class="relationship-dialog-full">
-          <label>短い表示メモ</label>
+          <label>その人の呼び方</label>
           <input id="editText">
         </div>
         <div class="relationship-dialog-full">
@@ -367,8 +392,8 @@
   </dialog>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="./config.js?v=130"></script>
-  <script src="./common.js?v=130"></script>
+  <script src="./config.js?v=132"></script>
+  <script src="./common.js?v=132"></script>
   <script>initSiteTitle();</script>
   <script>
     let relationshipCharacters = [];
@@ -377,6 +402,7 @@
     let relationshipRenderPositions = {};
     let drag = null;
     let editingRelationId = null;
+    let visibleCharacterIds = new Set();
 
     async function loadAll(){
       document.getElementById("message").textContent = "読み込み中...";
@@ -394,6 +420,7 @@
 
       relationshipCharacters = charactersResult.data || [];
       relationshipRelations = relationsResult.data || [];
+      visibleCharacterIds = new Set(relationshipCharacters.map(c => c.id));
       relationshipPositions = {};
       (positionsResult.data || []).forEach(p => relationshipPositions[p.character_id] = { x:p.x, y:p.y });
 
@@ -414,16 +441,18 @@
       const gapY = 118;
       const centerX = Math.max(16, (w - nodeW) / 2);
       const result = {};
-      relationshipCharacters.forEach((c, i) => {
+      visibleCharacters().forEach((c, i) => {
         result[c.id] = { x:centerX, y:70 + i * gapY };
       });
-      const neededHeight = Math.max(520, 170 + Math.max(0, relationshipCharacters.length - 1) * gapY);
+      const shown = visibleCharacters().length;
+      const neededHeight = Math.max(520, 170 + Math.max(0, shown - 1) * gapY);
       canvas.style.setProperty("--relationship-mobile-height", neededHeight + "px");
       return result;
     }
 
     function positionForCharacter(id){
-      return relationshipRenderPositions[id] || relationshipPositions[id] || {x:80,y:80};
+      if(isMobileRelationship()) return relationshipRenderPositions[id] || relationshipPositions[id] || {x:80,y:80};
+      return relationshipPositions[id] || relationshipRenderPositions[id] || {x:80,y:80};
     }
 
     function ensureDefaultPositions(){
@@ -441,6 +470,33 @@
 
     function character(id){
       return relationshipCharacters.find(c => c.id === id);
+    }
+
+    function visibleCharacters(){
+      return relationshipCharacters.filter(c => visibleCharacterIds.has(c.id));
+    }
+
+    function visibleRelations(){
+      return relationshipRelations.filter(r => visibleCharacterIds.has(r.from_character_id) && visibleCharacterIds.has(r.to_character_id));
+    }
+
+    function toggleCharacterVisible(id, checked){
+      if(checked) visibleCharacterIds.add(id);
+      else visibleCharacterIds.delete(id);
+      renderAll();
+      message.textContent = checked ? "キャラクターを表示しました" : "キャラクターを非表示にしました";
+    }
+
+    function showAllCharacters(){
+      visibleCharacterIds = new Set(relationshipCharacters.map(c => c.id));
+      renderAll();
+      message.textContent = "全員を表示しました";
+    }
+
+    function hideAllCharacters(){
+      visibleCharacterIds = new Set();
+      renderAll();
+      message.textContent = "全員を非表示にしました";
     }
 
     function characterColor(c){
@@ -469,29 +525,37 @@
 
       characterList.innerHTML = relationshipCharacters.map(c => `
         <div class="relationship-list-item">
-          <span class="relationship-mini">
-            ${characterFace(c, "relationship-dot")}
-            <span>${e(c.name || "名前未設定")}</span>
-          </span>
+          <label class="relationship-check">
+            <input type="checkbox" ${visibleCharacterIds.has(c.id) ? "checked" : ""} onchange="toggleCharacterVisible('${c.id}', this.checked)">
+            <span class="relationship-mini">
+              ${characterFace(c, "relationship-dot")}
+              <span>${e(c.name || "名前未設定")}</span>
+            </span>
+          </label>
           <button class="secondary-button relationship-small-btn" onclick="arrangeAround('${c.id}')">中心にする</button>
         </div>
       `).join("");
     }
 
     function renderRelationList(){
+      const shownRelations = visibleRelations();
       if(!relationshipRelations.length){
         relationList.innerHTML = '<div class="relationship-list-item">まだ関係線がありません。</div>';
         return;
       }
+      if(!shownRelations.length){
+        relationList.innerHTML = '<div class="relationship-list-item">表示中のキャラクターに関係線がありません。</div>';
+        return;
+      }
 
-      relationList.innerHTML = relationshipRelations.map(r => {
+      relationList.innerHTML = shownRelations.map(r => {
         const from = character(r.from_character_id);
         const to = character(r.to_character_id);
         const typeLabel = r.type === "thick" ? "強調" : r.type === "dashed" ? "点線" : "通常";
         const detailMark = r.detail ? " / 詳細あり" : "";
         return `
           <div class="relationship-list-item">
-            <span>${e(from?.name || "?")} → ${e(to?.name || "?")}<br><small>${typeLabel}${detailMark} / ${e(r.label || "関係メモなし")}</small></span>
+            <span>${e(from?.name || "?")} → ${e(to?.name || "?")}<br><small>${typeLabel}${detailMark} / ${e(r.label || "呼び方未設定")}</small></span>
             <button class="secondary-button relationship-small-btn" onclick="openRelationEditor('${r.id}')">編集</button>
           </div>
         `;
@@ -502,7 +566,7 @@
       document.querySelectorAll(".relationship-node").forEach(n => n.remove());
       relationshipRenderPositions = isMobileRelationship() ? compactMobilePositions() : {...relationshipPositions};
 
-      relationshipCharacters.forEach((c, index) => {
+      visibleCharacters().forEach((c, index) => {
         const pos = positionForCharacter(c.id);
         const node = document.createElement("div");
         node.className = "relationship-node";
@@ -553,6 +617,7 @@
         x: Math.max(8, Math.min(x, canvas.clientWidth - 160)),
         y: Math.max(8, Math.min(y, canvas.clientHeight - 90))
       };
+      relationshipRenderPositions[drag.id] = relationshipPositions[drag.id];
       drag.node.style.left = relationshipPositions[drag.id].x + "px";
       drag.node.style.top = relationshipPositions[drag.id].y + "px";
       renderRelations();
@@ -580,14 +645,15 @@
       svg.innerHTML = "";
       labels.innerHTML = "";
 
+      const shownRelations = visibleRelations();
       const relationCounts = {};
-      relationshipRelations.forEach(r => {
+      shownRelations.forEach(r => {
         const pairKey = [r.from_character_id, r.to_character_id].sort().join("__");
         if(!relationCounts[pairKey]) relationCounts[pairKey] = [];
         relationCounts[pairKey].push(r.id);
       });
 
-      relationshipRelations.forEach(r => {
+      shownRelations.forEach((r, relationIndex) => {
         const from = nodeCenter(r.from_character_id);
         const to = nodeCenter(r.to_character_id);
         const fromChar = character(r.from_character_id);
@@ -607,40 +673,54 @@
         let offset = 0;
         if(siblingCount > 1){
           const center = (siblingCount - 1) / 2;
-          offset = (siblingIndex - center) * 42;
+          offset = (siblingIndex - center) * 46;
           if(r.from_character_id > r.to_character_id) offset *= -1;
+        }else{
+          // 同じペアではなくても、完全な直線だと重なりやすいので少しだけ交互に曲げる
+          offset = ((relationIndex % 3) - 1) * 10;
         }
 
-        const sx = from.x + nx * offset;
-        const sy = from.y + ny * offset;
-        const tx = to.x + nx * offset;
-        const ty = to.y + ny * offset;
-        const midX = (from.x + to.x) / 2 + nx * offset;
-        const midY = (from.y + to.y) / 2 + ny * offset;
+        const start = edgePoint(r.from_character_id, to);
+        const end = edgePoint(r.to_character_id, from);
+        const sx = start.x + nx * offset;
+        const sy = start.y + ny * offset;
+        const tx = end.x + nx * offset;
+        const ty = end.y + ny * offset;
+        const midX = (sx + tx) / 2;
+        const midY = (sy + ty) / 2;
+        const curve = Math.max(-120, Math.min(120, offset * 1.25));
+        const cx = midX + nx * curve;
+        const cy = midY + ny * curve;
 
         const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
-        path.setAttribute("d", `M ${sx} ${sy} Q ${midX} ${midY} ${tx} ${ty}`);
+        path.setAttribute("d", `M ${sx} ${sy} Q ${cx} ${cy} ${tx} ${ty}`);
         path.setAttribute("fill", "none");
         path.setAttribute("stroke", color);
-        path.setAttribute("stroke-width", r.type === "thick" ? "4" : "2.2");
+        path.setAttribute("stroke-width", r.type === "thick" ? "4" : "2.1");
         path.setAttribute("stroke-linecap", "round");
+        path.setAttribute("stroke-linejoin", "round");
+        path.setAttribute("opacity", r.type === "thick" ? "0.92" : "0.72");
         if(r.type === "dashed") path.setAttribute("stroke-dasharray", "8 7");
         svg.appendChild(path);
 
+        const labelX = cx + nx * 8;
+        const labelY = cy + ny * 8 + 6;
         const label = document.createElement("div");
         label.className = "relationship-label" + (r.detail ? " has-detail" : "");
-        label.style.left = midX + "px";
-        label.style.top = (midY + 6) + "px";
+        label.style.left = labelX + "px";
+        label.style.top = labelY + "px";
         label.textContent = r.label || typeName(r.type);
         label.title = "クリックで編集";
         label.addEventListener("click", () => openRelationEditor(r.id));
+        label.addEventListener("mouseenter", () => path.setAttribute("opacity", "1"));
+        label.addEventListener("mouseleave", () => path.setAttribute("opacity", r.type === "thick" ? "0.92" : "0.72"));
         labels.appendChild(label);
 
         if(r.detail){
           const detail = document.createElement("div");
           detail.className = "relationship-detail-pop";
-          detail.style.left = midX + "px";
-          detail.style.top = (midY - 8) + "px";
+          detail.style.left = labelX + "px";
+          detail.style.top = (labelY - 14) + "px";
           detail.textContent = r.detail;
           labels.appendChild(detail);
           label.addEventListener("mouseenter", () => detail.classList.add("show"));
@@ -649,6 +729,18 @@
           label.addEventListener("blur", () => detail.classList.remove("show"));
         }
       });
+    }
+
+    function edgePoint(id, target){
+      const center = nodeCenter(id);
+      const node = document.querySelector(`.relationship-node[data-id="${id}"]`);
+      const w = node ? node.offsetWidth : 148;
+      const h = node ? node.offsetHeight : 76;
+      const dx = target.x - center.x;
+      const dy = target.y - center.y;
+      if(Math.abs(dx) < 0.1 && Math.abs(dy) < 0.1) return center;
+      const scale = Math.min((w / 2) / Math.max(Math.abs(dx), 0.1), (h / 2) / Math.max(Math.abs(dy), 0.1)) * 0.92;
+      return { x:center.x + dx * scale, y:center.y + dy * scale };
     }
 
     function typeName(type){
@@ -767,9 +859,9 @@
       const radiusX = Math.min(360, canvas.clientWidth / 2 - 140);
       const radiusY = Math.min(220, canvas.clientHeight / 2 - 110);
       relationshipPositions[centerId] = { x:centerX, y:centerY };
-      const others = relationshipCharacters.filter(c => c.id !== centerId);
+      const others = visibleCharacters().filter(c => c.id !== centerId);
       others.forEach((c, i) => {
-        const angle = -Math.PI / 2 + (Math.PI * 2 * i / others.length);
+        const angle = -Math.PI / 2 + (Math.PI * 2 * i / Math.max(others.length,1));
         relationshipPositions[c.id] = {
           x: centerX + Math.cos(angle) * radiusX,
           y: centerY + Math.sin(angle) * radiusY
@@ -789,8 +881,9 @@
       const centerY = canvas.clientHeight / 2 - 37;
       const radiusX = Math.min(390, canvas.clientWidth / 2 - 140);
       const radiusY = Math.min(230, canvas.clientHeight / 2 - 110);
-      relationshipCharacters.forEach((c, i) => {
-        const angle = -Math.PI / 2 + (Math.PI * 2 * i / relationshipCharacters.length);
+      visibleCharacters().forEach((c, i) => {
+        const shown = Math.max(visibleCharacters().length,1);
+        const angle = -Math.PI / 2 + (Math.PI * 2 * i / shown);
         relationshipPositions[c.id] = { x:centerX + Math.cos(angle) * radiusX, y:centerY + Math.sin(angle) * radiusY };
       });
       renderAll();
@@ -803,7 +896,7 @@
         message.textContent = "スマホではグリッド配置をコンパクト表示に切り替えています。";
         return;
       }
-      relationshipCharacters.forEach((c, i) => {
+      visibleCharacters().forEach((c, i) => {
         relationshipPositions[c.id] = { x:90 + (i % 4) * 250, y:90 + Math.floor(i / 4) * 170 };
       });
       renderAll();
