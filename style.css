@@ -1999,3 +1999,34 @@ button{
   .timeline-mobile-year-title{position:static!important;top:auto!important}.timeline-mobile-year{overflow:visible!important}.timeline-mobile-card{display:block!important}.timeline-mobile-card textarea{display:block!important;position:static!important;margin-top:8px!important}.timeline-mobile-card-head{position:static!important;z-index:auto!important}.timeline-mobile-year-cards{gap:10px!important}
   .chart-box canvas{max-width:100%;height:auto}.layout-two{grid-template-columns:1fr!important}.compare-list{max-height:none!important}
 }
+
+/* v131: 職業詳細と共同編集向けの見やすさ調整 */
+.job-detail-preview{
+  margin-top:6px;
+  color:var(--muted);
+  font-size:12px;
+  line-height:1.55;
+  display:-webkit-box;
+  -webkit-line-clamp:3;
+  -webkit-box-orient:vertical;
+  overflow:hidden;
+}
+.card .sub b{
+  color:var(--text);
+  font-weight:800;
+}
+.sort-btn:disabled{
+  opacity:.35;
+  cursor:not-allowed;
+  transform:none!important;
+}
+.current-icon-box .mini-note,
+.form-item .mini-note{
+  margin-top:6px;
+  color:var(--muted);
+  font-size:12px;
+  line-height:1.6;
+}
+@media(max-width:700px){
+  .job-detail-preview{-webkit-line-clamp:4;}
+}
