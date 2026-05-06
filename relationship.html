@@ -395,7 +395,7 @@
 
 
 
-    /* v136: center-person radial layout and reciprocal straight-line visibility */
+    /* v137: center-person radial layout always uses render positions; reciprocal straight-line visibility */
     .relationship-node.is-center{
       transform:scale(1.04);
     }
@@ -540,8 +540,8 @@
   </dialog>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="./config.js?v=136"></script>
-  <script src="./common.js?v=136"></script>
+  <script src="./config.js?v=137"></script>
+  <script src="./common.js?v=137"></script>
   <script>initSiteTitle();</script>
   <script>
     let relationshipCharacters = [];
@@ -590,46 +590,49 @@
     function compactMobilePositions(){
       const chars = diagramCharacters();
       const centerId = currentCenterId();
-      const w = Math.max(canvas.clientWidth || window.innerWidth - 40, 320);
+      const w = Math.max(canvas.clientWidth || window.innerWidth - 40, 340);
       const nodeW = 132;
-      const nodeH = 74;
-      const cx = Math.max(8, (w - nodeW) / 2);
-      const cy = 250;
+      const nodeH = 76;
+      const cx = Math.max(10, (w - nodeW) / 2);
+      const cy = 260;
       const result = {};
       if(centerId && chars.some(c => c.id === centerId)) result[centerId] = { x:cx, y:cy };
 
       const others = chars.filter(c => c.id !== centerId);
-      const radius = Math.max(150, Math.min(230, w * 0.42));
+      if(!others.length){
+        canvas.style.setProperty("--relationship-mobile-height", "560px");
+        return result;
+      }
+
+      // スマホは横幅が狭いため、真円ではなく少し縦長の円にして見切れを防ぐ。
+      const rx = Math.max(105, Math.min(150, (w - nodeW) / 2 - 18));
+      const ry = others.length <= 3 ? 165 : 220;
       others.forEach((c, i) => {
-        const angle = -Math.PI / 2 + (Math.PI * 2 * i / Math.max(others.length, 1));
-        const rawX = cx + Math.cos(angle) * radius;
-        const rawY = cy + Math.sin(angle) * radius;
+        const angle = -Math.PI / 2 + (Math.PI * 2 * i / others.length);
+        const rawX = cx + Math.cos(angle) * rx;
+        const rawY = cy + Math.sin(angle) * ry;
         result[c.id] = {
           x: Math.max(8, Math.min(w - nodeW - 8, rawX)),
           y: Math.max(18, rawY)
         };
       });
 
-      const maxY = Math.max(...Object.values(result).map(p => p.y), cy) + nodeH + 64;
+      const maxY = Math.max(...Object.values(result).map(p => p.y), cy) + nodeH + 72;
       canvas.style.setProperty("--relationship-mobile-height", Math.max(620, maxY) + "px");
       return result;
-    }
-
-    function positionForCharacter(id){
-      if(isMobileRelationship()) return relationshipRenderPositions[id] || relationshipPositions[id] || {x:80,y:80};
-      return relationshipPositions[id] || relationshipRenderPositions[id] || {x:80,y:80};
     }
 
     function focusPositions(){
       const chars = diagramCharacters();
       const centerId = currentCenterId();
-      const w = Math.max(canvas.clientWidth || 900, 620);
-      const h = Math.max(canvas.clientHeight || 680, 520);
-      const nodeW = 148;
-      const nodeH = 76;
-      const cx = Math.max(24, w / 2 - nodeW / 2);
-      const cy = Math.max(24, h / 2 - nodeH / 2);
+      const nodeW = isMobileRelationship() ? 132 : 148;
+      const nodeH = isMobileRelationship() ? 76 : 82;
+      const w = Math.max(canvas.clientWidth || 0, isMobileRelationship() ? 340 : 920);
+      const h = Math.max(canvas.clientHeight || 0, isMobileRelationship() ? 620 : 560);
+      const cx = Math.max(18, (w - nodeW) / 2);
+      const cy = Math.max(18, (h - nodeH) / 2);
       const result = {};
+
       if(centerId && chars.some(c => c.id === centerId)){
         result[centerId] = { x:cx, y:cy };
       }
@@ -637,13 +640,14 @@
       const others = chars.filter(c => c.id !== centerId);
       if(!others.length) return result;
 
-      // 中心人物ビューでは、常に「中心＋周囲が円形」になるようにする。
-      // 保存済みの手動座標やグリッド配置に引っ張られない。
-      const radius = Math.max(190, Math.min((Math.min(w, h) / 2) - 105, 300));
+      // 中心人物を真ん中に、その他を周囲に円形配置する。
+      // 保存済み座標は使わず、中心人物を切り替えるたびに必ずこの配置で描画する。
+      const rx = Math.max(220, Math.min(360, (w - nodeW) / 2 - 70));
+      const ry = Math.max(170, Math.min(260, (h - nodeH) / 2 - 50));
       others.forEach((c, i) => {
-        const angle = -Math.PI / 2 + (Math.PI * 2 * i / Math.max(others.length, 1));
-        const rawX = cx + Math.cos(angle) * radius;
-        const rawY = cy + Math.sin(angle) * radius;
+        const angle = -Math.PI / 2 + (Math.PI * 2 * i / others.length);
+        const rawX = cx + Math.cos(angle) * rx;
+        const rawY = cy + Math.sin(angle) * ry;
         result[c.id] = {
           x: Math.max(18, Math.min(w - nodeW - 18, rawX)),
           y: Math.max(18, Math.min(h - nodeH - 18, rawY))
@@ -652,7 +656,13 @@
       return result;
     }
 
-    function ensureDefaultPositions(){
+    function positionForCharacter(id){
+      // 中心人物ビューでは、保存済みの手動座標より「現在の中心人物に応じた表示座標」を優先する。
+      // これを逆にすると、過去のグリッド配置が勝ってしまい、中心＋円形配置にならない。
+      return relationshipRenderPositions[id] || relationshipPositions[id] || {x:80,y:80};
+    }
+
+        function ensureDefaultPositions(){
       const existing = relationshipCharacters.filter(c => relationshipPositions[c.id]);
       if(existing.length === relationshipCharacters.length) return;
 
@@ -1096,7 +1106,8 @@
     }
 
     async function saveAll(){
-      const rows = Object.entries(relationshipPositions).map(([character_id, pos]) => ({
+      const sourcePositions = Object.keys(relationshipRenderPositions).length ? relationshipRenderPositions : relationshipPositions;
+      const rows = Object.entries(sourcePositions).map(([character_id, pos]) => ({
         character_id,
         x: Math.round(pos.x),
         y: Math.round(pos.y),
