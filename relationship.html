@@ -413,6 +413,20 @@
       .relationship-node.is-center{transform:scale(1.02);}
     }
 
+
+    /* v138: reciprocal lines are straight, parallel, and easier to see */
+    #relationshipSvg path.relationship-line{
+      vector-effect:non-scaling-stroke;
+      filter: drop-shadow(0 1px 1px rgba(255,255,255,.9));
+    }
+    #relationshipSvg path.relationship-line.reciprocal-line{
+      opacity:.92;
+    }
+    .relationship-label.reciprocal-label{
+      z-index:4;
+      box-shadow:0 10px 22px rgba(70,80,120,.16), 0 0 0 2px rgba(255,255,255,.85);
+    }
+
   </style>
 </head>
 <body>
@@ -904,9 +918,10 @@
       const shownRelations = visibleRelations();
       const centerId = currentCenterId();
       ensureArrowMarkers(svg);
+      if(!centerId) return;
 
       // 中心人物と相手の組み合わせごとにまとめる。
-      // A→中心 と 中心→A は別線として必ず見えるよう、平行にずらす。
+      // 中心→相手 と 相手→中心 は「1本に重ねず」、直線のまま平行に分けて表示する。
       const groups = new Map();
       shownRelations.forEach(r => {
         const otherId = r.from_character_id === centerId ? r.to_character_id : r.from_character_id;
@@ -916,7 +931,27 @@
       });
 
       groups.forEach((relations, otherId) => {
-        relations.forEach((r, index) => {
+        const hasOut = relations.some(r => r.from_character_id === centerId);
+        const hasIn = relations.some(r => r.to_character_id === centerId);
+        const isReciprocal = hasOut && hasIn;
+        const laneGap = isMobileRelationship() ? 28 : 38;
+
+        const centerPoint = nodeCenter(centerId);
+        const otherPoint = nodeCenter(otherId);
+        const baseDx = otherPoint.x - centerPoint.x;
+        const baseDy = otherPoint.y - centerPoint.y;
+        const baseLen = Math.max(1, Math.hypot(baseDx, baseDy));
+        const baseNx = -baseDy / baseLen;
+        const baseNy = baseDx / baseLen;
+        const baseTx = baseDx / baseLen;
+        const baseTy = baseDy / baseLen;
+
+        const outgoing = relations.filter(r => r.from_character_id === centerId);
+        const incoming = relations.filter(r => r.to_character_id === centerId);
+        const otherDirection = relations.filter(r => r.from_character_id !== centerId && r.to_character_id !== centerId);
+        const ordered = [...outgoing, ...incoming, ...otherDirection];
+
+        ordered.forEach((r, index) => {
           const from = nodeCenter(r.from_character_id);
           const to = nodeCenter(r.to_character_id);
           const fromChar = character(r.from_character_id);
@@ -924,42 +959,57 @@
           let start = edgePoint(r.from_character_id, to);
           let end = edgePoint(r.to_character_id, from);
 
-          // 同じ中心-相手の線が複数ある場合は、直線のまま平行移動する。
-          // 曲線にはしない。双方向2本なら左右に分かれて見える。
-          const dx = end.x - start.x;
-          const dy = end.y - start.y;
-          const len = Math.max(1, Math.hypot(dx, dy));
-          const nx = -dy / len;
-          const ny = dx / len;
-          const offset = (index - (relations.length - 1) / 2) * 22;
-          start = { x:start.x + nx * offset, y:start.y + ny * offset };
-          end = { x:end.x + nx * offset, y:end.y + ny * offset };
+          // reciprocal時は方向ごとにレーンを固定する。
+          // 例：中心→相手を右レーン、相手→中心を左レーンにして、↓↑ が見えるようにする。
+          let laneIndex = 0;
+          if(isReciprocal){
+            if(r.from_character_id === centerId){
+              const idx = outgoing.findIndex(x => x.id === r.id);
+              laneIndex = 1 + Math.max(0, idx) * 0.7;
+            }else if(r.to_character_id === centerId){
+              const idx = incoming.findIndex(x => x.id === r.id);
+              laneIndex = -1 - Math.max(0, idx) * 0.7;
+            }else{
+              laneIndex = index - (ordered.length - 1) / 2;
+            }
+          }else if(ordered.length > 1){
+            laneIndex = index - (ordered.length - 1) / 2;
+          }
+
+          const offset = laneIndex * laneGap;
+          start = { x:start.x + baseNx * offset, y:start.y + baseNy * offset };
+          end = { x:end.x + baseNx * offset, y:end.y + baseNy * offset };
 
           const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+          path.classList.add("relationship-line");
+          if(isReciprocal) path.classList.add("reciprocal-line");
           path.setAttribute("d", `M ${start.x} ${start.y} L ${end.x} ${end.y}`);
           path.setAttribute("fill", "none");
           path.setAttribute("stroke", color);
-          path.setAttribute("stroke-width", r.type === "thick" ? "4" : "2.3");
+          path.setAttribute("stroke-width", r.type === "thick" ? "4.4" : "2.7");
           path.setAttribute("stroke-linecap", "round");
           path.setAttribute("stroke-linejoin", "round");
-          path.setAttribute("opacity", r.type === "thick" ? "0.94" : "0.82");
+          path.setAttribute("opacity", r.type === "thick" ? "0.96" : "0.86");
           path.setAttribute("marker-end", `url(#arrow-${safeColorId(color)})`);
           if(r.type === "dashed") path.setAttribute("stroke-dasharray", "8 7");
           svg.appendChild(path);
 
+          // ラベルも左右に分ける。双方向の2ラベルが重ならないよう、線方向にも少しずらす。
+          const isFromCenter = r.from_character_id === centerId;
+          const labelAlong = isReciprocal ? (isFromCenter ? -34 : 34) : 0;
           const labelBaseX = (start.x + end.x) / 2;
           const labelBaseY = (start.y + end.y) / 2;
-          const labelX = labelBaseX + nx * (offset === 0 ? 0 : Math.sign(offset) * 8);
-          const labelY = labelBaseY + ny * (offset === 0 ? 0 : Math.sign(offset) * 8);
+          const labelX = labelBaseX + baseNx * (offset + Math.sign(offset || 1) * 10) + baseTx * labelAlong;
+          const labelY = labelBaseY + baseNy * (offset + Math.sign(offset || 1) * 10) + baseTy * labelAlong;
           const label = document.createElement("div");
-          label.className = "relationship-label" + (r.detail ? " has-detail" : "");
+          label.className = "relationship-label" + (r.detail ? " has-detail" : "") + (isReciprocal ? " reciprocal-label" : "");
           label.style.left = labelX + "px";
           label.style.top = labelY + "px";
           label.textContent = r.label || typeName(r.type);
           label.title = "クリックで編集";
           label.addEventListener("click", () => openRelationEditor(r.id));
           label.addEventListener("mouseenter", () => path.setAttribute("opacity", "1"));
-          label.addEventListener("mouseleave", () => path.setAttribute("opacity", r.type === "thick" ? "0.94" : "0.82"));
+          label.addEventListener("mouseleave", () => path.setAttribute("opacity", r.type === "thick" ? "0.96" : "0.86"));
           labels.appendChild(label);
 
           if(r.detail){
