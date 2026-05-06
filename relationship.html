@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>相関図</title>
-  <link rel="stylesheet" href="./style.css?v=135">
+  <link rel="stylesheet" href="./style.css?v=136">
   <style>
     .relationship-panel{padding:18px}
     .relationship-toolbar{
@@ -393,6 +393,26 @@
       .relationship-face{width:30px!important;height:30px!important;border-radius:10px!important;font-size:15px!important}
     }
 
+
+
+    /* v136: center-person radial layout and reciprocal straight-line visibility */
+    .relationship-node.is-center{
+      transform:scale(1.04);
+    }
+    #relationshipSvg .relationship-arrow{
+      overflow:visible;
+    }
+    .relationship-label{
+      pointer-events:auto;
+    }
+    @media(max-width:700px){
+      .relationship-canvas{
+        height:var(--relationship-mobile-height, 660px) !important;
+        min-height:620px!important;
+      }
+      .relationship-node.is-center{transform:scale(1.02);}
+    }
+
   </style>
 </head>
 <body>
@@ -520,8 +540,8 @@
   </dialog>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="./config.js?v=135"></script>
-  <script src="./common.js?v=135"></script>
+  <script src="./config.js?v=136"></script>
+  <script src="./common.js?v=136"></script>
   <script>initSiteTitle();</script>
   <script>
     let relationshipCharacters = [];
@@ -570,25 +590,28 @@
     function compactMobilePositions(){
       const chars = diagramCharacters();
       const centerId = currentCenterId();
-      const w = Math.max(canvas.clientWidth || window.innerWidth - 40, 300);
+      const w = Math.max(canvas.clientWidth || window.innerWidth - 40, 320);
       const nodeW = 132;
-      const nodeH = 70;
-      const cx = Math.max(12, (w - nodeW) / 2);
-      const cy = 235;
+      const nodeH = 74;
+      const cx = Math.max(8, (w - nodeW) / 2);
+      const cy = 250;
       const result = {};
       if(centerId && chars.some(c => c.id === centerId)) result[centerId] = { x:cx, y:cy };
+
       const others = chars.filter(c => c.id !== centerId);
-      const rx = Math.max(98, Math.min(145, w / 2 - 76));
-      const ry = Math.max(160, Math.min(205, 190));
+      const radius = Math.max(150, Math.min(230, w * 0.42));
       others.forEach((c, i) => {
         const angle = -Math.PI / 2 + (Math.PI * 2 * i / Math.max(others.length, 1));
+        const rawX = cx + Math.cos(angle) * radius;
+        const rawY = cy + Math.sin(angle) * radius;
         result[c.id] = {
-          x: Math.max(8, Math.min(w - nodeW - 8, cx + Math.cos(angle) * rx)),
-          y: Math.max(18, cy + Math.sin(angle) * ry)
+          x: Math.max(8, Math.min(w - nodeW - 8, rawX)),
+          y: Math.max(18, rawY)
         };
       });
-      const maxY = Math.max(...Object.values(result).map(p => p.y), cy) + nodeH + 56;
-      canvas.style.setProperty("--relationship-mobile-height", Math.max(560, maxY) + "px");
+
+      const maxY = Math.max(...Object.values(result).map(p => p.y), cy) + nodeH + 64;
+      canvas.style.setProperty("--relationship-mobile-height", Math.max(620, maxY) + "px");
       return result;
     }
 
@@ -604,22 +627,26 @@
       const h = Math.max(canvas.clientHeight || 680, 520);
       const nodeW = 148;
       const nodeH = 76;
-      const cx = Math.max(40, w / 2 - nodeW / 2);
-      const cy = Math.max(40, h / 2 - nodeH / 2);
+      const cx = Math.max(24, w / 2 - nodeW / 2);
+      const cy = Math.max(24, h / 2 - nodeH / 2);
       const result = {};
       if(centerId && chars.some(c => c.id === centerId)){
         result[centerId] = { x:cx, y:cy };
       }
+
       const others = chars.filter(c => c.id !== centerId);
       if(!others.length) return result;
 
-      const rx = Math.max(210, Math.min(360, w / 2 - 190));
-      const ry = Math.max(150, Math.min(240, h / 2 - 140));
+      // 中心人物ビューでは、常に「中心＋周囲が円形」になるようにする。
+      // 保存済みの手動座標やグリッド配置に引っ張られない。
+      const radius = Math.max(190, Math.min((Math.min(w, h) / 2) - 105, 300));
       others.forEach((c, i) => {
         const angle = -Math.PI / 2 + (Math.PI * 2 * i / Math.max(others.length, 1));
+        const rawX = cx + Math.cos(angle) * radius;
+        const rawY = cy + Math.sin(angle) * radius;
         result[c.id] = {
-          x: Math.max(18, Math.min(w - nodeW - 18, cx + Math.cos(angle) * rx)),
-          y: Math.max(18, Math.min(h - nodeH - 18, cy + Math.sin(angle) * ry))
+          x: Math.max(18, Math.min(w - nodeW - 18, rawX)),
+          y: Math.max(18, Math.min(h - nodeH - 18, rawY))
         };
       });
       return result;
@@ -866,73 +893,105 @@
 
       const shownRelations = visibleRelations();
       const centerId = currentCenterId();
-      const pairCounts = new Map();
+      ensureArrowMarkers(svg);
+
+      // 中心人物と相手の組み合わせごとにまとめる。
+      // A→中心 と 中心→A は別線として必ず見えるよう、平行にずらす。
+      const groups = new Map();
       shownRelations.forEach(r => {
         const otherId = r.from_character_id === centerId ? r.to_character_id : r.from_character_id;
-        pairCounts.set(otherId, (pairCounts.get(otherId) || 0) + 1);
+        if(!otherId) return;
+        if(!groups.has(otherId)) groups.set(otherId, []);
+        groups.get(otherId).push(r);
       });
-      const pairSeen = new Map();
 
-      shownRelations.forEach((r) => {
-        const from = nodeCenter(r.from_character_id);
-        const to = nodeCenter(r.to_character_id);
-        const fromChar = character(r.from_character_id);
-        const color = characterColor(fromChar);
-        let start = edgePoint(r.from_character_id, to);
-        let end = edgePoint(r.to_character_id, from);
+      groups.forEach((relations, otherId) => {
+        relations.forEach((r, index) => {
+          const from = nodeCenter(r.from_character_id);
+          const to = nodeCenter(r.to_character_id);
+          const fromChar = character(r.from_character_id);
+          const color = characterColor(fromChar);
+          let start = edgePoint(r.from_character_id, to);
+          let end = edgePoint(r.to_character_id, from);
 
-        const otherId = r.from_character_id === centerId ? r.to_character_id : r.from_character_id;
-        const total = pairCounts.get(otherId) || 1;
-        if(total > 1){
-          const seen = pairSeen.get(otherId) || 0;
-          pairSeen.set(otherId, seen + 1);
+          // 同じ中心-相手の線が複数ある場合は、直線のまま平行移動する。
+          // 曲線にはしない。双方向2本なら左右に分かれて見える。
           const dx = end.x - start.x;
           const dy = end.y - start.y;
           const len = Math.max(1, Math.hypot(dx, dy));
           const nx = -dy / len;
           const ny = dx / len;
-          const offset = (seen - (total - 1) / 2) * 18;
+          const offset = (index - (relations.length - 1) / 2) * 22;
           start = { x:start.x + nx * offset, y:start.y + ny * offset };
           end = { x:end.x + nx * offset, y:end.y + ny * offset };
-        }
 
-        const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
-        path.setAttribute("d", `M ${start.x} ${start.y} L ${end.x} ${end.y}`);
-        path.setAttribute("fill", "none");
-        path.setAttribute("stroke", color);
-        path.setAttribute("stroke-width", r.type === "thick" ? "4" : "2.2");
-        path.setAttribute("stroke-linecap", "round");
-        path.setAttribute("stroke-linejoin", "round");
-        path.setAttribute("opacity", r.type === "thick" ? "0.92" : "0.78");
-        if(r.type === "dashed") path.setAttribute("stroke-dasharray", "8 7");
-        svg.appendChild(path);
+          const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+          path.setAttribute("d", `M ${start.x} ${start.y} L ${end.x} ${end.y}`);
+          path.setAttribute("fill", "none");
+          path.setAttribute("stroke", color);
+          path.setAttribute("stroke-width", r.type === "thick" ? "4" : "2.3");
+          path.setAttribute("stroke-linecap", "round");
+          path.setAttribute("stroke-linejoin", "round");
+          path.setAttribute("opacity", r.type === "thick" ? "0.94" : "0.82");
+          path.setAttribute("marker-end", `url(#arrow-${safeColorId(color)})`);
+          if(r.type === "dashed") path.setAttribute("stroke-dasharray", "8 7");
+          svg.appendChild(path);
 
-        const labelX = (start.x + end.x) / 2;
-        const labelY = (start.y + end.y) / 2;
-        const label = document.createElement("div");
-        label.className = "relationship-label" + (r.detail ? " has-detail" : "");
-        label.style.left = labelX + "px";
-        label.style.top = labelY + "px";
-        label.textContent = r.label || typeName(r.type);
-        label.title = "クリックで編集";
-        label.addEventListener("click", () => openRelationEditor(r.id));
-        label.addEventListener("mouseenter", () => path.setAttribute("opacity", "1"));
-        label.addEventListener("mouseleave", () => path.setAttribute("opacity", r.type === "thick" ? "0.92" : "0.78"));
-        labels.appendChild(label);
+          const labelBaseX = (start.x + end.x) / 2;
+          const labelBaseY = (start.y + end.y) / 2;
+          const labelX = labelBaseX + nx * (offset === 0 ? 0 : Math.sign(offset) * 8);
+          const labelY = labelBaseY + ny * (offset === 0 ? 0 : Math.sign(offset) * 8);
+          const label = document.createElement("div");
+          label.className = "relationship-label" + (r.detail ? " has-detail" : "");
+          label.style.left = labelX + "px";
+          label.style.top = labelY + "px";
+          label.textContent = r.label || typeName(r.type);
+          label.title = "クリックで編集";
+          label.addEventListener("click", () => openRelationEditor(r.id));
+          label.addEventListener("mouseenter", () => path.setAttribute("opacity", "1"));
+          label.addEventListener("mouseleave", () => path.setAttribute("opacity", r.type === "thick" ? "0.94" : "0.82"));
+          labels.appendChild(label);
 
-        if(r.detail){
-          const detail = document.createElement("div");
-          detail.className = "relationship-detail-pop";
-          detail.style.left = labelX + "px";
-          detail.style.top = (labelY - 14) + "px";
-          detail.textContent = r.detail;
-          labels.appendChild(detail);
-          label.addEventListener("mouseenter", () => detail.classList.add("show"));
-          label.addEventListener("mouseleave", () => detail.classList.remove("show"));
-          label.addEventListener("focus", () => detail.classList.add("show"));
-          label.addEventListener("blur", () => detail.classList.remove("show"));
-        }
+          if(r.detail){
+            const detail = document.createElement("div");
+            detail.className = "relationship-detail-pop";
+            detail.style.left = labelX + "px";
+            detail.style.top = (labelY - 14) + "px";
+            detail.textContent = r.detail;
+            labels.appendChild(detail);
+            label.addEventListener("mouseenter", () => detail.classList.add("show"));
+            label.addEventListener("mouseleave", () => detail.classList.remove("show"));
+            label.addEventListener("focus", () => detail.classList.add("show"));
+            label.addEventListener("blur", () => detail.classList.remove("show"));
+          }
+        });
       });
+    }
+
+    function ensureArrowMarkers(svg){
+      const defs = document.createElementNS("http://www.w3.org/2000/svg", "defs");
+      const colors = [...new Set(visibleRelations().map(r => characterColor(character(r.from_character_id))))];
+      colors.forEach(color => {
+        const marker = document.createElementNS("http://www.w3.org/2000/svg", "marker");
+        marker.setAttribute("id", `arrow-${safeColorId(color)}`);
+        marker.setAttribute("viewBox", "0 0 10 10");
+        marker.setAttribute("refX", "8");
+        marker.setAttribute("refY", "5");
+        marker.setAttribute("markerWidth", "5");
+        marker.setAttribute("markerHeight", "5");
+        marker.setAttribute("orient", "auto-start-reverse");
+        const arrow = document.createElementNS("http://www.w3.org/2000/svg", "path");
+        arrow.setAttribute("d", "M 0 0 L 10 5 L 0 10 z");
+        arrow.setAttribute("fill", color);
+        arrow.setAttribute("opacity", "0.86");
+        marker.appendChild(arrow);
+        defs.appendChild(marker);
+      });
+      svg.appendChild(defs);
+    }
+
+    function safeColorId(color){
+      return String(color || "x").replace(/[^a-zA-Z0-9]/g, "");
     }
 
     function edgePoint(id, target){
