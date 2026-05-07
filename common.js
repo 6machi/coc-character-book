@@ -224,3 +224,52 @@ function bindUnsavedInputs(root=document){
     el.addEventListener('change', () => setUnsavedChanges(true));
   });
 }
+
+
+/* v145: simple maintenance mode for shared test operation
+   Toggle with site_settings key maintenance_mode = on/off. */
+async function getSiteSettingValue(key, fallback=''){
+  try{
+    const {data,error}=await sb.from('site_settings').select('value').eq('key',key).maybeSingle();
+    if(error) throw error;
+    return data && data.value !== undefined && data.value !== null ? String(data.value) : fallback;
+  }catch(error){
+    console.warn('site setting load failed', key, error);
+    return fallback;
+  }
+}
+function showMaintenanceOverlay(message){
+  if(document.getElementById('maintenanceOverlay')) return;
+  const overlay=document.createElement('div');
+  overlay.id='maintenanceOverlay';
+  overlay.innerHTML=`
+    <div class="maintenance-card">
+      <strong>メンテナンス中です</strong>
+      <p>${e(message || '現在、サイトの更新作業中です。入力や保存は少し待ってからお願いします。')}</p>
+      <button type="button" onclick="location.reload()">再読み込み</button>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+
+  const style=document.createElement('style');
+  style.textContent=`
+    #maintenanceOverlay{position:fixed;inset:0;z-index:9999;background:rgba(24,29,42,.42);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);display:grid;place-items:center;padding:18px;}
+    #maintenanceOverlay .maintenance-card{width:min(440px,92vw);border-radius:24px;background:#fff;border:1px solid rgba(255,255,255,.95);box-shadow:0 24px 80px rgba(20,30,55,.28);padding:24px;text-align:center;color:#202532;}
+    #maintenanceOverlay strong{display:block;font-size:24px;font-weight:950;margin-bottom:10px;color:#b42336;}
+    #maintenanceOverlay p{margin:0 0 18px;line-height:1.75;color:#596273;font-size:14px;}
+    #maintenanceOverlay button{border:0;border-radius:999px;background:#b42336;color:#fff;font-weight:900;padding:11px 18px;}
+    body.is-maintenance input,body.is-maintenance textarea,body.is-maintenance select,body.is-maintenance main button{pointer-events:none;opacity:.55;}
+    body.is-maintenance #maintenanceOverlay button{pointer-events:auto;opacity:1;}
+  `;
+  document.head.appendChild(style);
+  document.body.classList.add('is-maintenance');
+}
+async function initMaintenanceMode(){
+  const mode=(await getSiteSettingValue('maintenance_mode','off')).toLowerCase();
+  if(['on','true','1','yes'].includes(mode)){
+    const message=await getSiteSettingValue('maintenance_message','現在、サイトの更新作業中です。入力や保存は少し待ってからお願いします。');
+    showMaintenanceOverlay(message);
+  }
+}
+if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',initMaintenanceMode);
+else initMaintenanceMode();
