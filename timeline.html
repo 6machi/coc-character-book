@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>時系列</title>
-<!-- v159: horizontal table preserved, simple stable layout -->
-<link rel="stylesheet" href="./style.css?v=159">
+<!-- v160: SVG timeline view, text saved to Supabase -->
+<link rel="stylesheet" href="./style.css?v=160">
 <style>
 .timeline-panel{
   padding:18px;
@@ -32,7 +32,7 @@
   line-height:1.6;
 }
 
-/* 表示キャラクター：しまわず常時表示 */
+/* 表示キャラクター */
 .timeline-filter-panel{
   margin:12px 0;
   padding:16px 18px!important;
@@ -90,202 +90,29 @@
   display:block;
 }
 
-/* 横長時系列表：常に表示、横スクロール前提 */
-.timeline-shell{
-  --lane-w:210px;
-  --time-w:112px;
+/* SVG年表 */
+.timeline-svg-shell{
   display:block!important;
   width:100%!important;
   max-width:100%!important;
   min-width:0!important;
-  min-height:420px;
   overflow:auto!important;
   -webkit-overflow-scrolling:touch;
   border-radius:22px;
   border:1px solid var(--line);
   box-shadow:var(--glass-shadow-soft);
-  background:rgba(255,255,255,.78);
+  background:rgba(255,255,255,.82);
   margin:14px 0 0;
-  position:relative;
-  z-index:1;
+  padding:12px;
 }
-.timeline-board{
-  display:block!important;
-  width:max-content!important;
-  min-width:max-content!important;
+.timeline-svg-wrap{
+  width:max-content;
+  min-width:100%;
 }
-.timeline-header{
-  position:sticky;
-  top:0;
-  z-index:10;
-  display:grid!important;
-  grid-template-columns:var(--time-w) repeat(var(--lane-count), var(--lane-w));
-  width:max-content!important;
-  background:#f8fbff;
-  border-bottom:1px solid #cfd8e6;
-}
-.timeline-corner{
-  position:sticky;
-  left:0;
-  z-index:12;
-  min-height:78px;
-  display:grid;
-  place-items:center;
-  background:#f8fbff;
-  border-right:1px solid #cfd8e6;
-  color:var(--muted);
-  font-size:13px;
-  font-weight:900;
-}
-.timeline-header-char{
-  min-height:78px;
-  display:grid;
-  place-items:center;
-  gap:4px;
-  padding:7px;
-  border-right:1px solid #d6deea;
-}
-.timeline-header-char .timeline-face{
-  width:38px;
-  height:38px;
-  border-radius:11px;
-  font-size:19px;
-}
-.timeline-header-char b{
-  line-height:1.1;
-  font-size:13px;
-  text-align:center;
-  max-width:180px;
-  overflow:hidden;
-  text-overflow:ellipsis;
-}
-.timeline-row{
-  display:grid!important;
-  grid-template-columns:var(--time-w) repeat(var(--lane-count), var(--lane-w));
-  width:max-content!important;
-  min-height:132px;
-  border-bottom:1px solid #cfd8e6;
-}
-.timeline-time-cell{
-  position:sticky;
-  left:0;
-  z-index:8;
-  display:grid;
-  place-items:stretch;
-  background:#fff;
-  border-right:1px solid #cfd8e6;
-}
-.timeline-time-box{
-  display:grid;
-  place-items:center;
-  min-height:100%;
-  background:#3f86c4;
-  color:#fff;
-  text-align:center;
-  font-weight:950;
-  font-size:18px;
-  padding:10px;
-  line-height:1.25;
-}
-.timeline-lane-cell{
-  --c:#999;
-  position:relative;
-  min-height:132px;
-  display:grid;
-  grid-template-rows:34px minmax(98px, auto);
-  background:#fff;
-  border-right:1px solid #d6deea;
-}
-.timeline-age-bar{
-  display:grid;
-  place-items:center;
-  background:color-mix(in srgb,var(--c) 36%,#ffffff);
-  border-bottom:1px solid color-mix(in srgb,var(--c) 36%,#d6deea);
-  color:#202532;
-  font-size:13px;
-  font-weight:950;
-  text-align:center;
-}
-.timeline-mobile-character{
-  display:none;
-}
-.timeline-read-cell{
-  min-height:98px;
-  padding:9px 10px;
-  background:color-mix(in srgb,var(--c) 10%,#fff);
-  color:#243042;
-  font-size:13px;
-  font-weight:800;
-  line-height:1.65;
-  white-space:pre-wrap;
-  overflow-wrap:anywhere;
-  text-align:left;
-}
-.timeline-read-cell.empty{
-  color:#a0a6b4;
-  font-weight:800;
-}
-.timeline-edit-field{
-  display:none;
-  background:color-mix(in srgb,var(--c) 10%,#fff);
-}
-.timeline-edit-field textarea{
-  width:100%;
-  min-height:98px;
-  border:0;
-  border-radius:0;
-  padding:9px 10px;
-  resize:vertical;
-  background:transparent;
-  color:#243042;
-  font:inherit;
-  font-size:13px;
-  font-weight:800;
-  line-height:1.55;
-  text-align:left;
-}
-.timeline-edit-field textarea:focus{
-  outline:3px solid color-mix(in srgb,var(--c) 30%,transparent);
-  background:#fff;
-}
-body.timeline-edit-mode .timeline-read-cell{
-  display:none;
-}
-body.timeline-edit-mode .timeline-edit-field{
+.timeline-svg-wrap svg{
   display:block;
-}
-.timeline-lane-cell.unborn-empty{
-  --c:#b8bec8!important;
-  background:#f2f4f7;
-}
-.timeline-lane-cell.unborn-empty .timeline-age-bar{
-  background:#d9dde4!important;
-  color:#7f8798;
-  border-bottom-color:#cbd1db!important;
-}
-.timeline-lane-cell.unborn-empty .timeline-read-cell{
-  background:#f5f6f8!important;
-  color:#a0a6b4;
-}
-.timeline-lane-cell.unborn-empty .timeline-edit-field{
-  background:#f5f6f8!important;
-}
-.timeline-lane-cell.unborn-empty textarea{
-  color:#7f8798;
-}
-.timeline-lane-cell.unborn-filled .timeline-age-bar{
-  background:color-mix(in srgb,var(--c) 36%,#ffffff);
-}
-.timeline-lane-cell.unborn-filled .timeline-read-cell,
-.timeline-lane-cell.unborn-filled .timeline-edit-field{
-  background:color-mix(in srgb,var(--c) 10%,#fff);
-}
-.timeline-empty-message{
-  padding:30px 18px;
-  color:var(--muted);
-  text-align:center;
-  font-weight:850;
-  background:rgba(255,255,255,.72);
+  background:#fff;
+  border-radius:12px;
 }
 .timeline-save-bottom{
   margin:14px 0 0;
@@ -308,16 +135,13 @@ body.timeline-edit-mode .timeline-edit-field{
   color:var(--muted);
   font-size:12px;
 }
-
-@media(max-width:900px){
-  .timeline-shell{
-    --lane-w:180px;
-    --time-w:96px;
-    min-height:390px;
-  }
-  .timeline-header-char b{
-    font-size:12px;
-  }
+.timeline-empty-message{
+  padding:30px 18px;
+  color:var(--muted);
+  text-align:center;
+  font-weight:850;
+  background:rgba(255,255,255,.72);
+  border-radius:14px;
 }
 @media(max-width:760px){
   .timeline-panel{
@@ -326,45 +150,9 @@ body.timeline-edit-mode .timeline-edit-field{
   .timeline-filter-list{
     grid-template-columns:1fr!important;
   }
-  .timeline-shell{
-    --lane-w:160px;
-    --time-w:88px;
-    min-height:360px;
+  .timeline-svg-shell{
     border-radius:20px;
-  }
-  .timeline-corner{
-    min-height:70px;
-  }
-  .timeline-header-char{
-    min-height:70px;
-    padding:6px;
-  }
-  .timeline-header-char .timeline-face{
-    width:34px;
-    height:34px;
-    border-radius:10px;
-  }
-  .timeline-header-char b{
-    font-size:11px;
-  }
-  .timeline-row{
-    min-height:124px;
-  }
-  .timeline-time-box{
-    font-size:15px;
-    padding:7px;
-  }
-  .timeline-lane-cell{
-    min-height:124px;
-    grid-template-rows:30px minmax(94px, auto);
-  }
-  .timeline-age-bar{
-    font-size:11px;
-  }
-  .timeline-read-cell,
-  .timeline-edit-field textarea{
-    font-size:12px;
-    padding:8px;
+    padding:10px;
   }
   .timeline-save-bottom button{
     width:100%;
@@ -399,7 +187,7 @@ body.timeline-edit-mode .timeline-edit-field{
             <rect x="500" y="430" width="200" height="520" rx="95"/>
           </svg>
         </button>
-        <span class="info-pop">横長の時系列表です。スマホや細い画面では左右にスクロールして確認できます。「編集する」を押すと入力欄に切り替わります。</span>
+        <span class="info-pop">保存済みテキストをもとに、ブラウザ上で横長の年表として表示します。画像ファイルは保存しません。</span>
       </span>
     </div>
     <div class="timeline-toolbar">
@@ -418,8 +206,8 @@ body.timeline-edit-mode .timeline-edit-field{
     <div id="timelineCharacterFilter" class="timeline-filter-list"></div>
   </section>
 
-  <section class="timeline-shell" id="timelineShell">
-    <div class="timeline-board" id="timelineBoard"></div>
+  <section class="timeline-svg-shell">
+    <div class="timeline-svg-wrap" id="timelineSvgWrap"></div>
   </section>
 
   <section class="timeline-save-bottom">
@@ -434,9 +222,10 @@ body.timeline-edit-mode .timeline-edit-field{
 <div class="unsaved-pill">未保存の変更があります</div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="./config.js?v=159"></script>
-<script src="./common.js?v=159"></script>
+<script src="./config.js?v=160"></script>
+<script src="./common.js?v=160"></script>
 <script>initSiteTitle();</script>
+
 <script>
 let timelineCharacters = [];
 let timelineEntries = {};
@@ -444,6 +233,18 @@ let timelineEntryMeta = {};
 let timelineDirtyKeys = new Set();
 let selectedTimelineCharacters = new Set();
 let hideEmptyYears = false;
+let timelineEditMode = false;
+
+const timelineLayout = {
+  timeW: 110,
+  colW: 210,
+  headerH: 96,
+  minRowH: 92,
+  padding: 10,
+  ageH: 28,
+  fontSize: 13,
+  lineH: 18
+};
 
 function showTimelineMessage(text){
   const message = document.getElementById("message");
@@ -491,7 +292,7 @@ async function loadTimeline(){
   clearUnsavedChanges();
   leaveTimelineEditMode();
   renderTimelineFilter();
-  renderTimelineBoard();
+  renderTimelineSvg();
   showTimelineMessage("読み込みました");
 }
 
@@ -502,22 +303,23 @@ function getCharacterAge(character){
   return Number.isFinite(number) ? number : NaN;
 }
 
+function visibleTimelineCharacters(){
+  return timelineCharacters.filter(character => selectedTimelineCharacters.has(character.id));
+}
+
 function buildYearList(){
   if(!timelineCharacters.length) return [];
   const maxAge = Math.max(...timelineCharacters.map(c => Number(c.currentAge) || 0));
   return Array.from({length:maxAge + 1}, (_, i) => maxAge - i);
 }
 
-function visibleTimelineCharacters(){
-  return timelineCharacters.filter(character => selectedTimelineCharacters.has(character.id));
-}
-
-function timelineKey(characterId, yearsAgo){
-  return `${characterId}::${yearsAgo}`;
-}
-
 function hasYearEvents(year, characters){
   return characters.some(character => String(timelineEntries?.[character.id]?.[year] || "").trim());
+}
+
+function timelineYears(characters){
+  const allYears = buildYearList();
+  return hideEmptyYears ? allYears.filter(year => hasYearEvents(year, characters)) : allYears;
 }
 
 function yearLabel(year){
@@ -529,12 +331,24 @@ function ageLabel(character, yearsAgo){
   return age < 0 ? "未出生" : `${age}歳`;
 }
 
+function timelineKey(characterId, yearsAgo){
+  return `${characterId}::${yearsAgo}`;
+}
+
+function characterColor(character){
+  return col(character.image_color);
+}
+
+function characterEmoji(character){
+  return firstEmoji(character.emoji);
+}
+
 function characterFace(character){
-  const color = col(character.image_color);
+  const color = characterColor(character);
   if(character.icon_url){
     return `<span class="timeline-face" style="--c:${color};"><img src="${e(character.icon_url)}" alt="icon"></span>`;
   }
-  return `<span class="timeline-face" style="--c:${color};">${e(firstEmoji(character.emoji))}</span>`;
+  return `<span class="timeline-face" style="--c:${color};">${e(characterEmoji(character))}</span>`;
 }
 
 function renderTimelineFilter(){
@@ -547,7 +361,7 @@ function renderTimelineFilter(){
   }
 
   box.innerHTML = timelineCharacters.map(character => {
-    const color = col(character.image_color);
+    const color = characterColor(character);
     const checked = selectedTimelineCharacters.has(character.id) ? "checked" : "";
     return `
       <label class="timeline-filter-chip" style="--c:${color};">
@@ -562,120 +376,218 @@ function renderTimelineFilter(){
 function toggleTimelineCharacter(input){
   if(input.checked) selectedTimelineCharacters.add(input.value);
   else selectedTimelineCharacters.delete(input.value);
-  renderTimelineBoard();
+  renderTimelineSvg();
 }
 
 function selectAllTimelineCharacters(){
   selectedTimelineCharacters = new Set(timelineCharacters.map(character => character.id));
   renderTimelineFilter();
-  renderTimelineBoard();
+  renderTimelineSvg();
 }
 
 function toggleEmptyYears(){
   hideEmptyYears = !hideEmptyYears;
   const button = document.getElementById("hideEmptyYearsBtn");
   if(button) button.textContent = hideEmptyYears ? "すべての年を表示" : "出来事のない年を非表示";
-  renderTimelineBoard();
+  renderTimelineSvg();
 }
 
-function renderTimelineBoard(){
-  const board = document.getElementById("timelineBoard");
-  if(!board) return;
+function hexToRgb(hex){
+  hex = String(hex || "#999999").replace("#","");
+  if(hex.length === 3) hex = hex.split("").map(x => x + x).join("");
+  const n = parseInt(hex, 16);
+  return {r:(n>>16)&255, g:(n>>8)&255, b:n&255};
+}
 
+function mixColor(hex, amount){
+  const rgb = hexToRgb(hex);
+  const r = Math.round(rgb.r * amount + 255 * (1 - amount));
+  const g = Math.round(rgb.g * amount + 255 * (1 - amount));
+  const b = Math.round(rgb.b * amount + 255 * (1 - amount));
+  return `rgb(${r},${g},${b})`;
+}
+
+function textColorFor(hex){
+  const {r,g,b} = hexToRgb(hex);
+  const y = (r*299 + g*587 + b*114) / 1000;
+  return y > 170 ? "#202532" : "#ffffff";
+}
+
+function svgEsc(value){
+  return String(value ?? "").replace(/[&<>"']/g, m => ({
+    "&":"&amp;",
+    "<":"&lt;",
+    ">":"&gt;",
+    '"':"&quot;",
+    "'":"&#39;"
+  }[m]));
+}
+
+function wrapText(text, maxChars){
+  const raw = String(text || "");
+  const lines = [];
+  raw.split("\n").forEach(part => {
+    let s = part;
+    if(s.length === 0){
+      lines.push("");
+      return;
+    }
+    while(s.length > maxChars){
+      lines.push(s.slice(0, maxChars));
+      s = s.slice(maxChars);
+    }
+    lines.push(s);
+  });
+  return lines.length ? lines : [""];
+}
+
+function calcTimelineRows(characters, years){
+  return years.map(year => {
+    let maxLines = 1;
+    characters.forEach(character => {
+      const text = timelineEntries?.[character.id]?.[year] || "";
+      const unborn = Number(character.currentAge) - Number(year) < 0;
+      const placeholder = unborn ? "未出生" : "この時期の出来事";
+      const display = text.trim() || placeholder;
+      const lines = wrapText(display, 15);
+      maxLines = Math.max(maxLines, lines.length);
+    });
+    const height = Math.max(
+      timelineLayout.minRowH,
+      timelineLayout.ageH + timelineLayout.padding * 2 + maxLines * timelineLayout.lineH + 8
+    );
+    return {year, height};
+  });
+}
+
+function renderTimelineSvg(){
+  const wrap = document.getElementById("timelineSvgWrap");
   const characters = visibleTimelineCharacters();
-  const allYears = buildYearList();
-  const years = hideEmptyYears ? allYears.filter(year => hasYearEvents(year, characters)) : allYears;
+  const years = timelineYears(characters);
 
   if(!timelineCharacters.length){
-    board.innerHTML = '<div class="timeline-empty-message">年齢が登録されているキャラクターがまだいません。</div>';
+    wrap.innerHTML = '<div class="timeline-empty-message">年齢が登録されているキャラクターがまだいません。</div>';
     return;
   }
+
   if(!characters.length){
-    board.innerHTML = '<div class="timeline-empty-message">表示するキャラクターを選んでください。</div>';
+    wrap.innerHTML = '<div class="timeline-empty-message">表示するキャラクターを選んでください。</div>';
     return;
   }
 
-  board.style.setProperty("--lane-count", characters.length);
+  if(!years.length){
+    wrap.innerHTML = '<div class="timeline-empty-message">表示できる出来事がありません。「すべての年を表示」に戻して入力してください。</div>';
+    return;
+  }
 
-  const header = `
-    <div class="timeline-header">
-      <div class="timeline-corner">時系列</div>
-      ${characters.map(character => `
-        <div class="timeline-header-char" style="--c:${col(character.image_color)}">
-          ${characterFace(character)}
-          <b>${e(character.name || "名前未設定")}</b>
-        </div>
-      `).join("")}
-    </div>
+  const rows = calcTimelineRows(characters, years);
+  const width = timelineLayout.timeW + characters.length * timelineLayout.colW;
+  const height = timelineLayout.headerH + rows.reduce((sum, row) => sum + row.height, 0);
+
+  let svg = `
+  <svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" xmlns="http://www.w3.org/2000/svg">
+    <rect x="0" y="0" width="${width}" height="${height}" fill="#ffffff"/>
   `;
 
-  const rows = years.length
-    ? years.map(year => renderTimelineRow(year, characters)).join("")
-    : '<div class="timeline-empty-message">表示できる出来事がありません。「すべての年を表示」に戻して入力してください。</div>';
-
-  board.innerHTML = header + rows;
-}
-
-function renderTimelineRow(year, characters){
-  return `
-    <div class="timeline-row" data-years-ago="${year}">
-      <div class="timeline-time-cell"><div class="timeline-time-box">${e(yearLabel(year))}</div></div>
-      ${characters.map(character => renderTimelineCell(character, year)).join("")}
-    </div>
+  svg += `
+    <rect x="0" y="0" width="${timelineLayout.timeW}" height="${timelineLayout.headerH}" fill="#f8fbff" stroke="#cfd8e6"/>
+    <text x="${timelineLayout.timeW / 2}" y="${timelineLayout.headerH / 2 + 5}" text-anchor="middle" font-size="13" font-weight="900" fill="#7f8798">時系列</text>
   `;
-}
 
-function renderTimelineCell(character, yearsAgo){
-  const color = col(character.image_color);
-  const text = timelineEntries?.[character.id]?.[yearsAgo] || "";
-  const updatedAt = timelineEntryMeta?.[character.id]?.[yearsAgo] || "";
-  const hasText = !!text.trim();
-  const unborn = (Number(character.currentAge) - Number(yearsAgo)) < 0;
-  const unbornClass = unborn ? (hasText ? "unborn-filled" : "unborn-empty") : "";
-  const placeholder = unborn ? "未出生" : "この時期の出来事";
+  characters.forEach((character, index) => {
+    const x = timelineLayout.timeW + index * timelineLayout.colW;
+    const color = characterColor(character);
+    const emoji = characterEmoji(character);
+    svg += `<rect x="${x}" y="0" width="${timelineLayout.colW}" height="${timelineLayout.headerH}" fill="#f8fbff" stroke="#d6deea"/>`;
+    svg += `<circle cx="${x + timelineLayout.colW / 2}" cy="32" r="20" fill="${svgEsc(color)}"/>`;
+    svg += `<text x="${x + timelineLayout.colW / 2}" y="39" text-anchor="middle" font-size="18">${svgEsc(emoji)}</text>`;
+    const nameLines = wrapText(character.name || "名前未設定", 12);
+    nameLines.slice(0, 2).forEach((line, lineIndex) => {
+      svg += `<text x="${x + timelineLayout.colW / 2}" y="${66 + lineIndex * 15}" text-anchor="middle" font-size="12" font-weight="900" fill="#202532">${svgEsc(line)}</text>`;
+    });
+  });
 
-  return `
-    <div class="timeline-lane-cell ${unbornClass}" style="--c:${color};" data-character="${character.id}" data-years-ago="${yearsAgo}">
-      <div class="timeline-age-bar">${e(ageLabel(character, yearsAgo))}</div>
-      <div class="timeline-mobile-character">${characterFace(character)}<span>${e(character.name || "名前未設定")}</span><span class="timeline-mobile-age">${e(ageLabel(character, yearsAgo))}</span></div>
-      <div class="timeline-read-cell ${hasText ? "" : "empty"}">${hasText ? e(text) : e(placeholder)}</div>
-      <div class="timeline-edit-field">
-        <textarea
-          data-original="${c(text)}"
-          data-updated-at="${e(updatedAt)}"
-          oninput="markTimelineChanged(this)"
-          placeholder="${e(placeholder)}">${e(text)}</textarea>
-      </div>
-    </div>
-  `;
+  let y = timelineLayout.headerH;
+  rows.forEach(row => {
+    const year = row.year;
+    const rowHeight = row.height;
+
+    svg += `<rect x="0" y="${y}" width="${timelineLayout.timeW}" height="${rowHeight}" fill="#3f86c4" stroke="#cfd8e6"/>`;
+    svg += `<text x="${timelineLayout.timeW / 2}" y="${y + rowHeight / 2 + 6}" text-anchor="middle" font-size="18" font-weight="950" fill="#ffffff">${svgEsc(yearLabel(year))}</text>`;
+
+    characters.forEach((character, index) => {
+      const x = timelineLayout.timeW + index * timelineLayout.colW;
+      const color = characterColor(character);
+      const text = timelineEntries?.[character.id]?.[year] || "";
+      const updatedAt = timelineEntryMeta?.[character.id]?.[year] || "";
+      const hasText = !!text.trim();
+      const unborn = Number(character.currentAge) - Number(year) < 0;
+      const placeholder = unborn ? "未出生" : "この時期の出来事";
+      const display = hasText ? text : placeholder;
+      const emptyUnborn = unborn && !hasText;
+      const ageFill = emptyUnborn ? "#d9dde4" : mixColor(color, .36);
+      const cellFill = emptyUnborn ? "#f5f6f8" : mixColor(color, .10);
+      const textFill = emptyUnborn ? "#9aa3b2" : "#243042";
+
+      svg += `<rect x="${x}" y="${y}" width="${timelineLayout.colW}" height="${rowHeight}" fill="#ffffff" stroke="#d6deea"/>`;
+      svg += `<rect x="${x}" y="${y}" width="${timelineLayout.colW}" height="${timelineLayout.ageH}" fill="${svgEsc(ageFill)}" stroke="#d6deea"/>`;
+      svg += `<text x="${x + timelineLayout.colW / 2}" y="${y + 19}" text-anchor="middle" font-size="13" font-weight="950" fill="#202532">${svgEsc(ageLabel(character, year))}</text>`;
+
+      if(timelineEditMode){
+        svg += `<foreignObject x="${x}" y="${y + timelineLayout.ageH}" width="${timelineLayout.colW}" height="${rowHeight - timelineLayout.ageH}">
+          <textarea xmlns="http://www.w3.org/1999/xhtml"
+            data-character="${svgEsc(character.id)}"
+            data-years-ago="${year}"
+            data-original="${c(text)}"
+            data-updated-at="${e(updatedAt)}"
+            oninput="markTimelineChanged(this)"
+            placeholder="${svgEsc(placeholder)}"
+            style="width:100%;height:100%;border:0;padding:9px 10px;resize:none;background:${cellFill};font:800 13px -apple-system,BlinkMacSystemFont,'Hiragino Sans','Yu Gothic',sans-serif;line-height:1.55;color:${textFill};box-sizing:border-box;">${svgEsc(text)}</textarea>
+        </foreignObject>`;
+      }else{
+        svg += `<rect x="${x}" y="${y + timelineLayout.ageH}" width="${timelineLayout.colW}" height="${rowHeight - timelineLayout.ageH}" fill="${svgEsc(cellFill)}"/>`;
+        const lines = wrapText(display, 15);
+        lines.forEach((line, lineIndex) => {
+          const textY = y + timelineLayout.ageH + 18 + lineIndex * timelineLayout.lineH;
+          if(textY < y + rowHeight - 8){
+            svg += `<text x="${x + 10}" y="${textY}" font-size="13" font-weight="800" fill="${svgEsc(textFill)}">${svgEsc(line)}</text>`;
+          }
+        });
+      }
+    });
+
+    y += rowHeight;
+  });
+
+  svg += "</svg>";
+  wrap.innerHTML = svg;
 }
 
 function enterTimelineEditMode(){
-  document.body.classList.add("timeline-edit-mode");
+  timelineEditMode = true;
   const editButton = document.getElementById("timelineEditButton");
   const saveButton = document.getElementById("timelineSaveButton");
   const hint = document.getElementById("timelineSaveHint");
   if(editButton) editButton.style.display = "none";
   if(saveButton) saveButton.style.display = "";
   if(hint) hint.textContent = "編集モードです。入力後は保存してください。";
+  renderTimelineSvg();
 }
 
 function leaveTimelineEditMode(){
-  document.body.classList.remove("timeline-edit-mode");
+  timelineEditMode = false;
   const editButton = document.getElementById("timelineEditButton");
   const saveButton = document.getElementById("timelineSaveButton");
   const hint = document.getElementById("timelineSaveHint");
   if(editButton) editButton.style.display = "";
   if(saveButton) saveButton.style.display = "none";
   if(hint) hint.textContent = "閲覧モードです。編集する時は「編集する」を押してください。";
+  renderTimelineSvg();
 }
 
 function markTimelineChanged(textarea){
-  const box = textarea.closest("[data-character][data-years-ago]");
-  if(!box) return;
-
-  const characterId = box.dataset.character;
-  const yearsAgo = Number(box.dataset.yearsAgo);
+  const characterId = textarea.dataset.character;
+  const yearsAgo = Number(textarea.dataset.yearsAgo);
   const key = timelineKey(characterId, yearsAgo);
 
   textarea.dataset.dirty = "1";
@@ -691,10 +603,9 @@ function markTimelineChanged(textarea){
 function collectTimelineEntries(){
   const map = new Map();
 
-  document.querySelectorAll("[data-character][data-years-ago] textarea").forEach(textarea => {
-    const box = textarea.closest("[data-character][data-years-ago]");
-    const characterId = box.dataset.character;
-    const yearsAgo = Number(box.dataset.yearsAgo);
+  document.querySelectorAll("textarea[data-character][data-years-ago]").forEach(textarea => {
+    const characterId = textarea.dataset.character;
+    const yearsAgo = Number(textarea.dataset.yearsAgo);
     const key = timelineKey(characterId, yearsAgo);
 
     if(!timelineDirtyKeys.has(key) && textarea.dataset.dirty !== "1") return;
@@ -790,7 +701,7 @@ async function saveTimeline(){
 
   showTimelineMessage("保存しました");
   clearUnsavedChanges();
-  leaveTimelineEditMode();
+  timelineEditMode = false;
   await loadTimeline();
 }
 
