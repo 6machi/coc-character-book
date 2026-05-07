@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>相関図</title>
-  <link rel="stylesheet" href="./style.css?v=141">
+  <link rel="stylesheet" href="./style.css?v=142">
   <style>
     .relationship-panel{padding:18px}
     .relationship-toolbar{
@@ -488,7 +488,7 @@
             <label for="centerCharacter">中心人物</label>
             <select id="centerCharacter" class="relationship-center-select" onchange="setCenterCharacter(this.value)"></select>
           </div>
-          <button class="secondary-button" onclick="saveAll()">配置を保存</button>
+          
           <span id="message" class="relationship-message">読み込み中...</span>
         </div>
       </div>
@@ -554,8 +554,8 @@
   </dialog>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="./config.js?v=141"></script>
-  <script src="./common.js?v=141"></script>
+  <script src="./config.js?v=142"></script>
+  <script src="./common.js?v=142"></script>
   <script>initSiteTitle();</script>
   <script>
     let relationshipCharacters = [];
@@ -865,7 +865,7 @@
             </div>
           </div>
         `;
-        if(!isMobileRelationship()) node.addEventListener("pointerdown", startDrag);
+        node.addEventListener("pointerdown", startDrag);
         canvas.appendChild(node);
       });
     }
@@ -910,7 +910,7 @@
       drag.node.removeEventListener("pointermove", moveDrag);
       drag.node.removeEventListener("pointerup", endDrag);
       drag = null;
-      message.textContent = "配置を変更しました。保存できます。";
+      message.textContent = "配置を一時的に変更しました。中心人物を切り替えると自動配置に戻ります。";
       setUnsavedChanges(true);
     }
 

@@ -1,1 +1,1 @@
-coc-character-book v141 timeline save emergency fix
+coc-character-book v142 emergency mobile debug patch

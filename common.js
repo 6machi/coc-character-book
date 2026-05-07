@@ -7,7 +7,7 @@ function av(ch,cls='avatar'){let cc=col(ch.image_color),em=ch.emoji||'👤';if(c
 const QUESTION_OVERRIDES={
   imageSong:{type:'textarea'},
   relationshipCount:{type:'textarea'},
-  bloodType:{type:'select',options:['A','B','O','AB','不明','Rh-']}
+  bloodType:{type:'text'}
 };
 function normalizeQuestion(q){
   const over=QUESTION_OVERRIDES[q.key];

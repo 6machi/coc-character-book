@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ステータス</title>
-  <link rel="stylesheet" href="./style.css?v=141">
+  <link rel="stylesheet" href="./style.css?v=142">
   <style>
     .stats-controls{
       display:grid;
@@ -71,12 +71,12 @@
         </div>
       </div>
 
-      <div class="table-wrap" id="tw"><p class="note">読み込み中...</p></div>
+      <div class="table-wrap" id="tw"><p class="note">読み込み中...</p></div><div id="mobileStats" class="mobile-stats-list"></div>
     </section>
   </main>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="./config.js?v=141"></script>
-  <script src="./common.js?v=141"></script>
+  <script src="./config.js?v=142"></script>
+  <script src="./common.js?v=142"></script>
   <script>initSiteTitle();</script>
   <script>
     const STATUS_MAX = 20;
@@ -86,7 +86,7 @@
     async function init(){
       const t = await team();
       const [cr, sr] = await Promise.all([
-        sb.from('characters').select('id,name,furigana,emoji,image_color,created_at,sort_order').eq('team_id',t.id).order('sort_order',{ascending:true,nullsFirst:false}).order('created_at',{ascending:true}),
+        sb.from('characters').select('id,name,furigana,emoji,icon_url,image_color,basic,answers,created_at,sort_order').eq('team_id',t.id).order('sort_order',{ascending:true,nullsFirst:false}).order('created_at',{ascending:true}),
         sb.from('stats').select('*')
       ]);
       if(cr.error) throw cr.error;
@@ -104,9 +104,10 @@
     function allKeys(){ return SG.flatMap(g => g.keys); }
 
     function renderRankingOptions(){
-      const options = SG.map(g => `<optgroup label="${e(g.title)}">${g.keys.map(k => `<option value="${e(k)}">${e(k)}</option>`).join('')}</optgroup>`).join('');
+      const extra = `<optgroup label="キャラ基本情報"><option value="年齢">年齢</option><option value="身長">身長</option></optgroup>`;
+      const options = extra + SG.map(g => `<optgroup label="${e(g.title)}">${g.keys.map(k => `<option value="${e(k)}">${e(k)}</option>`).join('')}</optgroup>`).join('');
       rankingKey.innerHTML = options;
-      if([...rankingKey.options].some(o => o.value === 'APP')) rankingKey.value = 'APP';
+      if([...rankingKey.options].some(o => o.value === 'STR')) rankingKey.value = 'STR';
     }
 
     function renderChecks(){
@@ -125,6 +126,9 @@
     }
     function num(v){ const n = numericValue(v); return Number.isFinite(n) ? n : 0; }
     function displayValue(id,k){
+      const ch = CH.find(c=>c.id===id);
+      if(k==='年齢') return ch?.basic?.age || '';
+      if(k==='身長') return ch?.answers?.height || '';
       const v = SM[id]?.[k];
       if(v !== undefined && v !== null && String(v).trim() !== '') return String(v);
       const d = statDefault(k);
@@ -169,7 +173,7 @@
 
     function renderRanking(){
       if(!CH.length || !rankingKey) return;
-      const key = rankingKey.value || 'APP';
+      const key = rankingKey.value || 'STR';
       const dir = rankingDir.value === 'asc' ? 1 : -1;
       const rows = CH.map(ch => ({
         ch,
@@ -191,7 +195,8 @@
       if(!CH.length){ tw.innerHTML='<p class="note">キャラクターがありません。</p>'; return; }
       const chars = sortedForTable();
       const head = `<thead><tr><th class="sticky-col">項目</th>${chars.map(ch=>{let cc=col(ch.image_color),em=firstEmoji(ch.emoji);return `<th class="character-col"><span style="color:${cc};font-weight:bold">${e(ch.name||'名前未設定')}</span> <span>${e(em)}</span></th>`}).join('')}</tr></thead>`;
-      const body = SG.map(g => {
+      const displayGroups = [{title:'キャラ基本情報',keys:['年齢','身長']}, ...SG];
+      const body = displayGroups.map(g => {
         const keys = g.keys.filter(k => !(hideDefaults.checked && isDefaultRow(k, chars)));
         if(!keys.length) return '';
         return `<tr class="group-row"><th class="sticky-col">${e(g.title)}</th>${chars.map(()=>'<td></td>').join('')}</tr>` + keys.map(k => {
@@ -202,6 +207,17 @@
         }).join('');
       }).join('');
       tw.innerHTML = `<table>${head}<tbody>${body}</tbody></table>`;
+      renderMobileStats(chars, displayGroups);
+    }
+
+    function renderMobileStats(chars, displayGroups){
+      if(!mobileStats) return;
+      if(!chars.length){ mobileStats.innerHTML='<p class="note">キャラクターがありません。</p>'; return; }
+      mobileStats.innerHTML = displayGroups.map(g => {
+        const keys = g.keys.filter(k => !(hideDefaults.checked && isDefaultRow(k, chars)));
+        if(!keys.length) return '';
+        return `<section class="mobile-stat-group"><h3>${e(g.title)}</h3>${keys.map(k=>`<article class="mobile-stat-card"><div class="mobile-stat-title">${e(k)}</div><div class="mobile-stat-values">${chars.map(ch=>{const cc=col(ch.image_color), em=firstEmoji(ch.emoji), val=displayValue(ch.id,k)||'—'; const cls=cellClass(k,ch,chars).match(/class="([^"]+)/)?.[1]||''; return `<div class="mobile-stat-value ${cls}" style="--c:${cc}"><span class="mobile-stat-name"><span class="mini-emoji" style="--c:${cc}">${e(em)}</span>${e(ch.name||'名前未設定')}</span><span class="mobile-stat-number">${e(val)}</span></div>`}).join('')}</div></article>`).join('')}</section>`;
+      }).join('');
     }
 
     init().catch(x => tw.innerHTML='<p class="note">読み込み失敗：'+e(x.message)+'</p>');

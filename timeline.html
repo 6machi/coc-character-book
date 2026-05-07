@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>時系列</title>
-  <link rel="stylesheet" href="./style.css?v=141">
+  <link rel="stylesheet" href="./style.css?v=142">
   <style>
     .timeline-panel {
       padding: 18px;
@@ -303,8 +303,8 @@
   <div class="unsaved-pill">未保存の変更があります</div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="./config.js?v=141"></script>
-  <script src="./common.js?v=141"></script>
+  <script src="./config.js?v=142"></script>
+  <script src="./common.js?v=142"></script>
   <script>initSiteTitle();</script>
 
   <script>
@@ -422,7 +422,7 @@
             <th class="timeline-corner">名前</th>
             ${yearList.map(year => `
               <th class="timeline-year-head">
-                <span class="timeline-year-main">${year}年前</span>
+                <span class="timeline-year-main">${yearsAgo}年前</span>
               </th>
             `).join("")}
           </tr>
@@ -469,7 +469,7 @@
               <span>${ageLabel}</span>
               <span class="relative">${yearsAgo}年前</span>
             </div>
-            <textarea data-original="${c(text)}" data-updated-at="${e(timelineEntryMeta?.[character.id]?.[year] || "")}" oninput="markTimelineChanged(this)" placeholder="${isUnborn ? "未出生" : "この時期の出来事"}">${e(text)}</textarea>
+            <textarea data-original="${c(text)}" data-updated-at="${e(timelineEntryMeta?.[character.id]?.[yearsAgo] || "")}" oninput="markTimelineChanged(this)" placeholder="${isUnborn ? "未出生" : "この時期の出来事"}">${e(text)}</textarea>
           </div>
         </td>
       `;
@@ -647,18 +647,19 @@
       if(!box) return;
 
       box.innerHTML = yearList.map(year => {
+        const yearsAgo = year;
         const cards = visibleCharacters.map(character => {
           const color = col(character.image_color);
-          const age = character.currentAge - year;
+          const age = character.currentAge - yearsAgo;
           const isUnborn = age < 0;
           const ageLabel = isUnborn ? "未出生" : `${age}歳`;
-          const text = timelineEntries?.[character.id]?.[year] || "";
+          const text = timelineEntries?.[character.id]?.[yearsAgo] || "";
           const face = character.icon_url
             ? `<span class="timeline-mobile-face" style="--c:${color};"><img src="${e(character.icon_url)}" alt="icon"></span>`
             : `<span class="timeline-mobile-face" style="--c:${color};">${e(firstEmoji(character.emoji))}</span>`;
 
           return `
-            <div class="timeline-mobile-card ${isUnborn ? "is-unborn" : ""}" style="--c:${color};" data-character="${character.id}" data-years-ago="${year}">
+            <div class="timeline-mobile-card ${isUnborn ? "is-unborn" : ""}" style="--c:${color};" data-character="${character.id}" data-years-ago="${yearsAgo}">
               <div class="timeline-mobile-card-head">
                 ${face}
                 <div>
@@ -666,14 +667,14 @@
                   <span>${ageLabel}</span>
                 </div>
               </div>
-              <textarea data-original="${c(text)}" data-updated-at="${e(timelineEntryMeta?.[character.id]?.[year] || "")}" oninput="markTimelineChanged(this)" placeholder="${isUnborn ? "未出生" : "この時期の出来事"}">${e(text)}</textarea>
+              <textarea data-original="${c(text)}" data-updated-at="${e(timelineEntryMeta?.[character.id]?.[yearsAgo] || "")}" oninput="markTimelineChanged(this)" placeholder="${isUnborn ? "未出生" : "この時期の出来事"}">${e(text)}</textarea>
             </div>
           `;
         }).join("");
 
         return `
           <div class="timeline-mobile-year">
-            <div class="timeline-mobile-year-title">${year}年前</div>
+            <div class="timeline-mobile-year-title">${yearsAgo}年前</div>
             <div class="timeline-mobile-year-cards">${cards}</div>
           </div>
         `;
