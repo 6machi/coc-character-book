@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ステータス</title>
-  <link rel="stylesheet" href="./style.css?v=148">
+  <link rel="stylesheet" href="./style.css?v=151">
   <style>
     .stats-controls{
       display:grid;
@@ -32,7 +32,117 @@
     .ranking-value{font-weight:900;font-size:18px}
     @media(max-width:760px){.ranking-controls{grid-template-columns:1fr}.ranking-item{grid-template-columns:34px 1fr auto;padding:9px}}
     @media(max-width:760px){.stats-controls{grid-template-columns:1fr}.stats-checks{display:grid;gap:8px}}
-  </style>
+  
+/* v150 stats mobile control fix */
+@media(max-width:760px){
+  .stats-controls,
+  .stats-options,
+  .stats-filter,
+  .status-controls,
+  .status-options,
+  .status-filter,
+  .stats-checks,
+  .status-checks{
+    writing-mode:horizontal-tb!important;
+    text-orientation:mixed!important;
+  }
+  .stats-controls label,
+  .stats-options label,
+  .stats-filter label,
+  .status-controls label,
+  .status-options label,
+  .status-filter label,
+  .stats-checks label,
+  .status-checks label,
+  .character-toggle,
+  .stat-toggle,
+  label:has(input[type="checkbox"]){
+    writing-mode:horizontal-tb!important;
+    text-orientation:mixed!important;
+    display:flex!important;
+    flex-direction:row!important;
+    align-items:center!important;
+    gap:10px!important;
+    min-height:auto!important;
+    width:auto!important;
+    max-width:100%!important;
+    white-space:normal!important;
+    line-height:1.45!important;
+  }
+  .stats-controls input[type="checkbox"],
+  .stats-options input[type="checkbox"],
+  .stats-filter input[type="checkbox"],
+  .status-controls input[type="checkbox"],
+  .status-options input[type="checkbox"],
+  .status-filter input[type="checkbox"],
+  .stats-checks input[type="checkbox"],
+  .status-checks input[type="checkbox"],
+  input[type="checkbox"]{
+    width:22px!important;
+    height:22px!important;
+    min-width:22px!important;
+    min-height:22px!important;
+    max-width:22px!important;
+    max-height:22px!important;
+    inline-size:22px!important;
+    block-size:22px!important;
+    flex:0 0 22px!important;
+    transform:none!important;
+    writing-mode:horizontal-tb!important;
+    appearance:auto;
+    -webkit-appearance:checkbox;
+  }
+  .stats-list,
+  .stats-grid,
+  .status-list,
+  .status-grid{
+    writing-mode:horizontal-tb!important;
+    text-orientation:mixed!important;
+  }
+}
+
+
+/* v151 stronger stats mobile checkbox fix */
+@media(max-width:760px){
+  .panel:has(input[type="checkbox"]),
+  .panel:has(input[type="checkbox"]) *{
+    writing-mode:horizontal-tb!important;
+    text-orientation:mixed!important;
+  }
+  .panel label:has(input[type="checkbox"]),
+  label:has(input[type="checkbox"]),
+  .character-toggle,
+  .stat-toggle{
+    display:flex!important;
+    flex-direction:row!important;
+    align-items:center!important;
+    justify-content:flex-start!important;
+    gap:10px!important;
+    min-height:auto!important;
+    height:auto!important;
+    width:auto!important;
+    max-width:100%!important;
+    white-space:normal!important;
+    line-height:1.45!important;
+  }
+  input[type="checkbox"]{
+    width:22px!important;
+    height:22px!important;
+    min-width:22px!important;
+    min-height:22px!important;
+    max-width:22px!important;
+    max-height:22px!important;
+    inline-size:22px!important;
+    block-size:22px!important;
+    flex:0 0 22px!important;
+    transform:none!important;
+    writing-mode:horizontal-tb!important;
+    appearance:auto!important;
+    -webkit-appearance:checkbox!important;
+  }
+}
+
+</style>
 </head>
 <body>
   <header>
@@ -75,8 +185,8 @@
     </section>
   </main>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="./config.js?v=148"></script>
-  <script src="./common.js?v=148"></script>
+  <script src="./config.js?v=151"></script>
+  <script src="./common.js?v=151"></script>
   <script>initSiteTitle();</script>
   <script>
     const STATUS_MAX = 20;

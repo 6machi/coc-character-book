@@ -3,7 +3,9 @@
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>時系列</title>
-<link rel="stylesheet" href="./style.css?v=148">
+<!-- v151: timeline table before character filters -->
+<!-- v149: timeline first, filters below -->
+<link rel="stylesheet" href="./style.css?v=151">
 <style>
 .timeline-panel{padding:18px}
 .timeline-toolbar{display:flex;flex-wrap:wrap;gap:9px;align-items:center;margin-top:13px}
@@ -75,6 +77,125 @@ body.timeline-edit-mode .timeline-edit-field{display:block}
   .timeline-read-cell,.timeline-edit-field textarea{font-size:12px;padding:8px}
   .timeline-save-bottom button{width:100%}
 }
+
+/* v149: keep the timeline itself above secondary controls */
+.timeline-filter-panel{
+  margin-top:14px;
+}
+.timeline-shell{
+  min-height:260px;
+}
+.timeline-save-bottom{
+  position:sticky;
+  bottom:0;
+  z-index:25;
+  padding:12px 0 10px;
+  background:linear-gradient(180deg,rgba(255,255,255,0),rgba(255,255,255,.92) 24%,rgba(255,255,255,.96));
+}
+@media(max-width:760px){
+  .timeline-shell{
+    max-height:62vh;
+    min-height:360px;
+    margin-top:12px;
+  }
+  .timeline-save-bottom{
+    padding:12px 0 calc(12px + env(safe-area-inset-bottom));
+  }
+  .timeline-filter-panel{
+    margin-top:18px;
+  }
+  .timeline-filter-list{
+    grid-template-columns:1fr;
+  }
+}
+
+
+/* v150 timeline containment/fixed layering */
+.timeline-panel,
+.timeline-filter-panel,
+.timeline-save-bottom{
+  position:relative;
+  z-index:5;
+}
+.timeline-shell{
+  position:relative;
+  z-index:1;
+  isolation:isolate;
+  contain:layout paint;
+  overflow:auto;
+  -webkit-overflow-scrolling:touch;
+}
+.timeline-header{
+  z-index:8!important;
+}
+.timeline-corner{
+  z-index:9!important;
+}
+.timeline-time-cell{
+  z-index:6!important;
+}
+@media(max-width:760px){
+  .timeline-shell{
+    max-height:58vh!important;
+    min-height:320px;
+    margin-top:12px;
+  }
+}
+
+
+/* v151 timeline final ordering + containment */
+.timeline-panel{
+  position:relative;
+  z-index:20;
+}
+.timeline-shell{
+  position:relative!important;
+  z-index:1!important;
+  isolation:isolate;
+  contain:layout paint;
+  overflow:auto!important;
+  -webkit-overflow-scrolling:touch;
+  min-height:260px;
+  margin-top:14px;
+}
+.timeline-header{
+  z-index:8!important;
+}
+.timeline-corner{
+  z-index:9!important;
+}
+.timeline-time-cell{
+  z-index:6!important;
+}
+.timeline-save-bottom{
+  position:sticky;
+  bottom:0;
+  z-index:30;
+  padding:12px 0 10px;
+  background:linear-gradient(180deg,rgba(255,255,255,0),rgba(255,255,255,.92) 24%,rgba(255,255,255,.96));
+}
+.timeline-filter-panel{
+  position:relative;
+  z-index:5;
+  margin-top:18px;
+}
+@media(max-width:760px){
+  .timeline-shell{
+    max-height:58vh!important;
+    min-height:320px;
+    margin-top:12px;
+  }
+  .timeline-save-bottom{
+    padding:12px 0 calc(12px + env(safe-area-inset-bottom));
+  }
+  .timeline-filter-panel{
+    margin-top:18px;
+  }
+  .timeline-filter-list{
+    grid-template-columns:1fr!important;
+  }
+}
+
 </style>
 </head>
 
@@ -115,14 +236,6 @@ body.timeline-edit-mode .timeline-edit-field{display:block}
     <div class="timeline-mobile-hint">スマホでは左右にスクロールして、各キャラの列を確認できます。</div>
   </section>
 
-  <section class="panel">
-    <div class="page-title-row"><h2>表示キャラクター</h2></div>
-    <div class="timeline-filter-actions">
-      <button class="secondary-button" onclick="selectAllTimelineCharacters()">全員表示</button>
-    </div>
-    <div id="timelineCharacterFilter" class="timeline-filter-list"></div>
-  </section>
-
   <section class="timeline-shell" id="timelineShell">
     <div class="timeline-board" id="timelineBoard"></div>
   </section>
@@ -139,8 +252,8 @@ body.timeline-edit-mode .timeline-edit-field{display:block}
 <div class="unsaved-pill">未保存の変更があります</div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="./config.js?v=148"></script>
-<script src="./common.js?v=148"></script>
+<script src="./config.js?v=151"></script>
+<script src="./common.js?v=151"></script>
 <script>initSiteTitle();</script>
 
 <script>

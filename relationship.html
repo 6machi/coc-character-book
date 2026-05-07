@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>相関図</title>
-  <link rel="stylesheet" href="./style.css?v=148">
+  <link rel="stylesheet" href="./style.css?v=151">
   <style>
     .relationship-panel{padding:18px}
     .relationship-toolbar{
@@ -427,7 +427,33 @@
       box-shadow:0 10px 22px rgba(70,80,120,.16), 0 0 0 2px rgba(255,255,255,.85);
     }
 
-  </style>
+  
+/* v150 relationship: node placement is temporary; do not show placement-save controls */
+#savePositionsButton,
+#saveLayoutButton,
+#positionSaveButton,
+.save-positions,
+.save-layout,
+.placement-save,
+button[data-action="save-positions"],
+button[data-action="save-layout"]{
+  display:none!important;
+}
+
+
+/* v151 relationship: node placement is temporary, relationship data save remains */
+#savePositionsButton,
+#saveLayoutButton,
+#positionSaveButton,
+.save-positions,
+.save-layout,
+.placement-save,
+button[data-action="save-positions"],
+button[data-action="save-layout"]{
+  display:none!important;
+}
+
+</style>
 </head>
 <body>
   <header>
@@ -554,8 +580,8 @@
   </dialog>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="./config.js?v=148"></script>
-  <script src="./common.js?v=148"></script>
+  <script src="./config.js?v=151"></script>
+  <script src="./common.js?v=151"></script>
   <script>initSiteTitle();</script>
   <script>
     let relationshipCharacters = [];
@@ -1231,7 +1257,7 @@
       }
       await loadAll();
       clearUnsavedChanges();
-      message.textContent = "配置を保存しました";
+      message.textContent = "配置は自動表示しました";
     }
 
     function arrangeAround(centerId){
