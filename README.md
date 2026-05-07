@@ -1,6 +1,4 @@
-coc-character-book v161 SVG timeline refinements
-- blank born cells are pale
-- unborn blank cells are gray
-- edit/save controls above the timeline
-- mobile shows vertical timeline
+coc-character-book v162 SVG timeline mobile empty-character filter
+- mobile-only button hides unborn/empty character cells
+- text data remains in Supabase
 - no SQL files included

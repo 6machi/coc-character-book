@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>時系列</title>
-<!-- v161: SVG timeline with mobile vertical view -->
-<link rel="stylesheet" href="./style.css?v=161">
+<!-- v162: mobile hide empty character cells -->
+<link rel="stylesheet" href="./style.css?v=162">
 <style>
 .timeline-panel{
   padding:18px;
@@ -214,7 +214,13 @@
   box-sizing:border-box;
 }
 
+.mobile-only-control{
+  display:none!important;
+}
 @media(max-width:760px){
+  .mobile-only-control{
+    display:inline-flex!important;
+  }
   .timeline-panel{
     padding:16px;
   }
@@ -272,13 +278,15 @@
           ・編集→保存で内容が記録されます<br>
           ・未出生でグレーアウトされたところにも出来事を記載できます<br>
           ・キャラカードから年齢を自動算出しています<br>
-          ・スマホでみると縦表記になります、表で確認したい場合はPC推奨
+          ・スマホでみると縦表記になります、表で確認したい場合はPC推奨<br>
+          ・スマホでは未出生／出来事なしのキャラを非表示にできます
         </span>
       </span>
     </div>
     <div class="timeline-toolbar">
       <button class="secondary-button" onclick="loadTimeline()">再読み込み</button>
       <button class="secondary-button" id="hideEmptyYearsBtn" onclick="toggleEmptyYears()">出来事のない年を非表示</button>
+      <button class="secondary-button mobile-only-control" id="hideMobileEmptyCharactersBtn" onclick="toggleMobileEmptyCharacters()">未出生・出来事なしを非表示</button>
       <span id="message" class="timeline-message">読み込み中...</span>
     </div>
   </section>
@@ -307,8 +315,8 @@
 <div class="unsaved-pill">未保存の変更があります</div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="./config.js?v=161"></script>
-<script src="./common.js?v=161"></script>
+<script src="./config.js?v=162"></script>
+<script src="./common.js?v=162"></script>
 <script>initSiteTitle();</script>
 
 <script>
@@ -318,6 +326,7 @@ let timelineEntryMeta = {};
 let timelineDirtyKeys = new Set();
 let selectedTimelineCharacters = new Set();
 let hideEmptyYears = false;
+let hideMobileEmptyCharacters = false;
 let timelineEditMode = false;
 
 const timelineLayout = {
@@ -475,6 +484,13 @@ function toggleEmptyYears(){
   const button = document.getElementById("hideEmptyYearsBtn");
   if(button) button.textContent = hideEmptyYears ? "すべての年を表示" : "出来事のない年を非表示";
   renderTimelineViews();
+}
+
+function toggleMobileEmptyCharacters(){
+  hideMobileEmptyCharacters = !hideMobileEmptyCharacters;
+  const button = document.getElementById("hideMobileEmptyCharactersBtn");
+  if(button) button.textContent = hideMobileEmptyCharacters ? "未記入キャラも表示" : "未出生・出来事なしを非表示";
+  renderTimelineMobile();
 }
 
 function hexToRgb(hex){
@@ -684,7 +700,9 @@ function renderTimelineMobile(){
     return;
   }
 
-  wrap.innerHTML = years.map(year => {
+  const mobileYears = [];
+
+  years.forEach(year => {
     const cells = characters.map(character => {
       const color = characterColor(character);
       const text = timelineEntries?.[character.id]?.[year] || "";
@@ -694,6 +712,10 @@ function renderTimelineMobile(){
       const placeholder = unborn ? "未出生" : "この時期の出来事";
       const unbornClass = unborn && !hasText ? "unborn-empty" : "";
       const emptyClass = !hasText ? "empty" : "";
+
+      if(hideMobileEmptyCharacters && !hasText){
+        return "";
+      }
 
       if(timelineEditMode){
         return `
@@ -724,15 +746,21 @@ function renderTimelineMobile(){
           <div class="timeline-mobile-text ${emptyClass}">${hasText ? e(text) : e(placeholder)}</div>
         </div>
       `;
-    }).join("");
+    }).filter(Boolean).join("");
 
-    return `
-      <section class="timeline-mobile-year">
-        <div class="timeline-mobile-year-title">${e(yearLabel(year))}</div>
-        ${cells}
-      </section>
-    `;
-  }).join("");
+    if(cells || !hideMobileEmptyCharacters){
+      mobileYears.push(`
+        <section class="timeline-mobile-year">
+          <div class="timeline-mobile-year-title">${e(yearLabel(year))}</div>
+          ${cells || '<div class="timeline-empty-message">表示できる出来事がありません。</div>'}
+        </section>
+      `);
+    }
+  });
+
+  wrap.innerHTML = mobileYears.length
+    ? mobileYears.join("")
+    : '<div class="timeline-empty-message">表示できる出来事がありません。「未記入キャラも表示」に戻してください。</div>';
 }
 
 function enterTimelineEditMode(){
