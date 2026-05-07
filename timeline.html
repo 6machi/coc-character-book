@@ -3,32 +3,32 @@
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>時系列</title>
-<!-- v151: timeline table before character filters -->
-<!-- v149: timeline first, filters below -->
-<link rel="stylesheet" href="./style.css?v=151">
+<!-- v152: clean rebuilt timeline, table before filters -->
+<link rel="stylesheet" href="./style.css?v=152">
 <style>
-.timeline-panel{padding:18px}
+.timeline-panel{padding:18px;position:relative;z-index:20}
 .timeline-toolbar{display:flex;flex-wrap:wrap;gap:9px;align-items:center;margin-top:13px}
 .timeline-message{color:var(--muted);font-size:13px;line-height:1.7}
 .timeline-mobile-hint{display:none;margin-top:8px;padding:10px 12px;border-radius:14px;background:#fff8e8;border:1px solid #ead7aa;color:#785612;font-size:12px;line-height:1.6}
 
+.timeline-filter-panel{position:relative;z-index:5;margin-top:18px}
 .timeline-filter-actions{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0 12px}
 .timeline-filter-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px 14px}
-.timeline-filter-chip{--c:#999;display:flex;align-items:center;gap:9px;padding:6px 2px;border:0;background:transparent;font-size:13px;font-weight:850;cursor:pointer}
-.timeline-filter-chip input{width:18px;height:18px;accent-color:var(--c)}
+.timeline-filter-chip{--c:#999;display:flex;align-items:center;gap:9px;padding:6px 2px;border:0;background:transparent;font-size:13px;font-weight:850;cursor:pointer;writing-mode:horizontal-tb!important;text-orientation:mixed!important}
+.timeline-filter-chip input{width:18px;height:18px;min-width:18px;min-height:18px;accent-color:var(--c);flex:0 0 auto}
 .timeline-face{width:30px;height:30px;border-radius:9px;display:grid;place-items:center;background:var(--c);overflow:hidden;box-shadow:inset 0 0 0 1px rgba(255,255,255,.65);flex:0 0 auto}
 .timeline-face img{width:100%;height:100%;object-fit:contain;display:block}
 
-.timeline-shell{--lane-w:210px;--time-w:112px;overflow:auto;border-radius:22px;border:1px solid var(--line);box-shadow:var(--glass-shadow-soft);background:rgba(255,255,255,.78);max-height:76vh}
+.timeline-shell{--lane-w:210px;--time-w:112px;overflow:auto!important;border-radius:22px;border:1px solid var(--line);box-shadow:var(--glass-shadow-soft);background:rgba(255,255,255,.78);max-height:76vh;min-height:260px;margin-top:14px;position:relative!important;z-index:1!important;isolation:isolate;contain:layout paint;-webkit-overflow-scrolling:touch}
 .timeline-board{width:max-content;min-width:100%;position:relative}
-.timeline-header{position:sticky;top:0;z-index:20;display:grid;grid-template-columns:var(--time-w) repeat(var(--lane-count), var(--lane-w));background:#f8fbff;border-bottom:1px solid #cfd8e6}
-.timeline-corner{position:sticky;left:0;z-index:30;min-height:78px;display:grid;place-items:center;background:#f8fbff;border-right:1px solid #cfd8e6;color:var(--muted);font-size:13px;font-weight:900}
+.timeline-header{position:sticky;top:0;z-index:8!important;display:grid;grid-template-columns:var(--time-w) repeat(var(--lane-count), var(--lane-w));background:#f8fbff;border-bottom:1px solid #cfd8e6}
+.timeline-corner{position:sticky;left:0;z-index:9!important;min-height:78px;display:grid;place-items:center;background:#f8fbff;border-right:1px solid #cfd8e6;color:var(--muted);font-size:13px;font-weight:900}
 .timeline-header-char{min-height:78px;display:grid;place-items:center;gap:4px;padding:7px;border-right:1px solid #d6deea}
 .timeline-header-char .timeline-face{width:38px;height:38px;border-radius:11px;font-size:19px}
 .timeline-header-char b{line-height:1.1;font-size:13px;text-align:center;max-width:180px;overflow:hidden;text-overflow:ellipsis}
 
 .timeline-row{display:grid;grid-template-columns:var(--time-w) repeat(var(--lane-count), var(--lane-w));min-height:132px;border-bottom:1px solid #cfd8e6}
-.timeline-time-cell{position:sticky;left:0;z-index:10;display:grid;place-items:stretch;background:#fff;border-right:1px solid #cfd8e6}
+.timeline-time-cell{position:sticky;left:0;z-index:6!important;display:grid;place-items:stretch;background:#fff;border-right:1px solid #cfd8e6}
 .timeline-time-box{display:grid;place-items:center;min-height:100%;background:#3f86c4;color:#fff;text-align:center;font-weight:950;font-size:18px;padding:10px;line-height:1.25}
 
 .timeline-lane-cell{--c:#999;position:relative;min-height:132px;display:grid;grid-template-rows:34px minmax(98px, auto);background:#fff;border-right:1px solid #d6deea}
@@ -52,7 +52,7 @@ body.timeline-edit-mode .timeline-edit-field{display:block}
 .timeline-lane-cell.unborn-filled .timeline-read-cell,.timeline-lane-cell.unborn-filled .timeline-edit-field{background:color-mix(in srgb,var(--c) 10%,#fff)}
 
 .timeline-empty-message{padding:30px 18px;color:var(--muted);text-align:center;font-weight:850;background:rgba(255,255,255,.72)}
-.timeline-save-bottom{margin:14px 0 0;display:flex;justify-content:center}
+.timeline-save-bottom{position:sticky;bottom:0;z-index:30;margin:0;padding:12px 0 10px;background:linear-gradient(180deg,rgba(255,255,255,0),rgba(255,255,255,.92) 24%,rgba(255,255,255,.96));display:flex;justify-content:center}
 .timeline-save-bottom .timeline-save-box{display:grid;gap:8px;justify-items:center}
 .timeline-save-bottom button{min-width:240px}
 .timeline-save-hint{text-align:center;color:var(--muted);font-size:12px}
@@ -64,8 +64,8 @@ body.timeline-edit-mode .timeline-edit-field{display:block}
 @media(max-width:760px){
   .timeline-panel{padding:16px}
   .timeline-mobile-hint{display:block}
-  .timeline-filter-list{grid-template-columns:1fr 1fr;gap:8px 10px}
-  .timeline-shell{--lane-w:160px;--time-w:88px;max-height:72vh;border-radius:20px}
+  .timeline-filter-list{grid-template-columns:1fr!important}
+  .timeline-shell{--lane-w:160px;--time-w:88px;max-height:58vh!important;min-height:320px;margin-top:12px;border-radius:20px}
   .timeline-corner{min-height:70px}
   .timeline-header-char{min-height:70px;padding:6px}
   .timeline-header-char .timeline-face{width:34px;height:34px;border-radius:10px}
@@ -75,127 +75,9 @@ body.timeline-edit-mode .timeline-edit-field{display:block}
   .timeline-lane-cell{min-height:124px;grid-template-rows:30px minmax(94px, auto)}
   .timeline-age-bar{font-size:11px}
   .timeline-read-cell,.timeline-edit-field textarea{font-size:12px;padding:8px}
+  .timeline-save-bottom{padding:12px 0 calc(12px + env(safe-area-inset-bottom))}
   .timeline-save-bottom button{width:100%}
 }
-
-/* v149: keep the timeline itself above secondary controls */
-.timeline-filter-panel{
-  margin-top:14px;
-}
-.timeline-shell{
-  min-height:260px;
-}
-.timeline-save-bottom{
-  position:sticky;
-  bottom:0;
-  z-index:25;
-  padding:12px 0 10px;
-  background:linear-gradient(180deg,rgba(255,255,255,0),rgba(255,255,255,.92) 24%,rgba(255,255,255,.96));
-}
-@media(max-width:760px){
-  .timeline-shell{
-    max-height:62vh;
-    min-height:360px;
-    margin-top:12px;
-  }
-  .timeline-save-bottom{
-    padding:12px 0 calc(12px + env(safe-area-inset-bottom));
-  }
-  .timeline-filter-panel{
-    margin-top:18px;
-  }
-  .timeline-filter-list{
-    grid-template-columns:1fr;
-  }
-}
-
-
-/* v150 timeline containment/fixed layering */
-.timeline-panel,
-.timeline-filter-panel,
-.timeline-save-bottom{
-  position:relative;
-  z-index:5;
-}
-.timeline-shell{
-  position:relative;
-  z-index:1;
-  isolation:isolate;
-  contain:layout paint;
-  overflow:auto;
-  -webkit-overflow-scrolling:touch;
-}
-.timeline-header{
-  z-index:8!important;
-}
-.timeline-corner{
-  z-index:9!important;
-}
-.timeline-time-cell{
-  z-index:6!important;
-}
-@media(max-width:760px){
-  .timeline-shell{
-    max-height:58vh!important;
-    min-height:320px;
-    margin-top:12px;
-  }
-}
-
-
-/* v151 timeline final ordering + containment */
-.timeline-panel{
-  position:relative;
-  z-index:20;
-}
-.timeline-shell{
-  position:relative!important;
-  z-index:1!important;
-  isolation:isolate;
-  contain:layout paint;
-  overflow:auto!important;
-  -webkit-overflow-scrolling:touch;
-  min-height:260px;
-  margin-top:14px;
-}
-.timeline-header{
-  z-index:8!important;
-}
-.timeline-corner{
-  z-index:9!important;
-}
-.timeline-time-cell{
-  z-index:6!important;
-}
-.timeline-save-bottom{
-  position:sticky;
-  bottom:0;
-  z-index:30;
-  padding:12px 0 10px;
-  background:linear-gradient(180deg,rgba(255,255,255,0),rgba(255,255,255,.92) 24%,rgba(255,255,255,.96));
-}
-.timeline-filter-panel{
-  position:relative;
-  z-index:5;
-  margin-top:18px;
-}
-@media(max-width:760px){
-  .timeline-shell{
-    max-height:58vh!important;
-    min-height:320px;
-    margin-top:12px;
-  }
-  .timeline-save-bottom{
-    padding:12px 0 calc(12px + env(safe-area-inset-bottom));
-  }
-  .timeline-filter-panel{
-    margin-top:18px;
-  }
-  .timeline-filter-list{
-    grid-template-columns:1fr!important;
-  }
-}
-
 </style>
 </head>
 
@@ -247,13 +129,21 @@ body.timeline-edit-mode .timeline-edit-field{display:block}
       <div class="timeline-save-hint" id="timelineSaveHint">閲覧モードです。編集する時は「編集する」を押してください。</div>
     </div>
   </section>
+
+  <section class="panel timeline-filter-panel">
+    <div class="page-title-row"><h2>表示キャラクター</h2></div>
+    <div class="timeline-filter-actions">
+      <button class="secondary-button" onclick="selectAllTimelineCharacters()">全員表示</button>
+    </div>
+    <div id="timelineCharacterFilter" class="timeline-filter-list"></div>
+  </section>
 </main>
 
 <div class="unsaved-pill">未保存の変更があります</div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="./config.js?v=151"></script>
-<script src="./common.js?v=151"></script>
+<script src="./config.js?v=152"></script>
+<script src="./common.js?v=152"></script>
 <script>initSiteTitle();</script>
 
 <script>
@@ -264,8 +154,13 @@ let timelineDirtyKeys = new Set();
 let selectedTimelineCharacters = new Set();
 let hideEmptyYears = false;
 
+function showTimelineMessage(text){
+  const message = document.getElementById("message");
+  if(message) message.textContent = text;
+}
+
 async function loadTimeline(){
-  document.getElementById("message").textContent = "読み込み中...";
+  showTimelineMessage("読み込み中...");
   const teamData = await team();
 
   const [charactersResult, entriesResult] = await Promise.all([
@@ -304,9 +199,9 @@ async function loadTimeline(){
 
   clearUnsavedChanges();
   leaveTimelineEditMode();
-  renderTimelineFilter();
   renderTimelineBoard();
-  document.getElementById("message").textContent = "読み込みました";
+  renderTimelineFilter();
+  showTimelineMessage("読み込みました");
 }
 
 function getCharacterAge(character){
@@ -353,6 +248,8 @@ function characterFace(character){
 
 function renderTimelineFilter(){
   const box = document.getElementById("timelineCharacterFilter");
+  if(!box) return;
+
   if(!timelineCharacters.length){
     box.innerHTML = '<p class="note">年齢が登録されているキャラクターがまだいません。</p>';
     return;
@@ -392,6 +289,8 @@ function toggleEmptyYears(){
 
 function renderTimelineBoard(){
   const board = document.getElementById("timelineBoard");
+  if(!board) return;
+
   const characters = visibleTimelineCharacters();
   const allYears = buildYearList();
   const years = hideEmptyYears ? allYears.filter(year => hasYearEvents(year, characters)) : allYears;
@@ -494,8 +393,7 @@ function markTimelineChanged(textarea){
   timelineEntries[characterId][yearsAgo] = textarea.value.trim();
 
   setUnsavedChanges(true);
-  const message = document.getElementById("message");
-  if(message) message.textContent = "未保存の変更があります";
+  showTimelineMessage("未保存の変更があります");
 }
 
 function collectTimelineEntries(){
@@ -546,11 +444,11 @@ async function assertTimelineUnchanged(rows){
 }
 
 async function saveTimeline(){
-  document.getElementById("message").textContent = "保存中...";
+  showTimelineMessage("保存中...");
   const rows = collectTimelineEntries();
 
   if(rows.length === 0){
-    document.getElementById("message").textContent = "保存する変更がありません";
+    showTimelineMessage("保存する変更がありません");
     leaveTimelineEditMode();
     return;
   }
@@ -559,7 +457,7 @@ async function saveTimeline(){
     await assertTimelineUnchanged(rows);
   }catch(error){
     console.error(error);
-    document.getElementById("message").textContent = error.message;
+    showTimelineMessage(error.message);
     alert(error.message);
     return;
   }
@@ -575,7 +473,7 @@ async function saveTimeline(){
       .maybeSingle();
 
     if(existing.error){
-      document.getElementById("message").textContent = "保存確認に失敗しました：" + existing.error.message;
+      showTimelineMessage("保存確認に失敗しました：" + existing.error.message);
       return;
     }
 
@@ -593,12 +491,12 @@ async function saveTimeline(){
     }
 
     if(result.error){
-      document.getElementById("message").textContent = "保存に失敗しました：" + result.error.message;
+      showTimelineMessage("保存に失敗しました：" + result.error.message);
       return;
     }
   }
 
-  document.getElementById("message").textContent = "保存しました";
+  showTimelineMessage("保存しました");
   clearUnsavedChanges();
   leaveTimelineEditMode();
   await loadTimeline();
@@ -606,7 +504,7 @@ async function saveTimeline(){
 
 loadTimeline().catch(error => {
   console.error(error);
-  document.getElementById("message").textContent = "読み込みに失敗しました：" + error.message;
+  showTimelineMessage("読み込みに失敗しました：" + error.message);
 });
 </script>
 </body>

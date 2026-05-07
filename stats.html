@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ステータス</title>
-  <link rel="stylesheet" href="./style.css?v=151">
+  <link rel="stylesheet" href="./style.css?v=152">
   <style>
     .stats-controls{
       display:grid;
@@ -142,6 +142,47 @@
   }
 }
 
+
+/* v152 mobile stats checkbox fix */
+@media(max-width:760px){
+  .panel:has(input[type="checkbox"]),
+  .panel:has(input[type="checkbox"]) *{
+    writing-mode:horizontal-tb!important;
+    text-orientation:mixed!important;
+  }
+  .panel label:has(input[type="checkbox"]),
+  label:has(input[type="checkbox"]),
+  .character-toggle,
+  .stat-toggle{
+    display:flex!important;
+    flex-direction:row!important;
+    align-items:center!important;
+    justify-content:flex-start!important;
+    gap:10px!important;
+    min-height:auto!important;
+    height:auto!important;
+    width:auto!important;
+    max-width:100%!important;
+    white-space:normal!important;
+    line-height:1.45!important;
+  }
+  input[type="checkbox"]{
+    width:22px!important;
+    height:22px!important;
+    min-width:22px!important;
+    min-height:22px!important;
+    max-width:22px!important;
+    max-height:22px!important;
+    inline-size:22px!important;
+    block-size:22px!important;
+    flex:0 0 22px!important;
+    transform:none!important;
+    writing-mode:horizontal-tb!important;
+    appearance:auto!important;
+    -webkit-appearance:checkbox!important;
+  }
+}
+
 </style>
 </head>
 <body>
@@ -185,8 +226,8 @@
     </section>
   </main>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="./config.js?v=151"></script>
-  <script src="./common.js?v=151"></script>
+  <script src="./config.js?v=152"></script>
+  <script src="./common.js?v=152"></script>
   <script>initSiteTitle();</script>
   <script>
     const STATUS_MAX = 20;
