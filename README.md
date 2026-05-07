@@ -1,2 +1,2 @@
-coc-character-book v147 timeline table-style view/edit toggle
+coc-character-book v148 fixed timeline table view/edit layout
 SQL files are intentionally not included.

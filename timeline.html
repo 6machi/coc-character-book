@@ -3,86 +3,498 @@
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>時系列</title>
-<link rel="stylesheet" href="./style.css?v=147">
+<link rel="stylesheet" href="./style.css?v=148">
 <style>
-.timeline-panel{padding:18px}.timeline-toolbar{display:flex;flex-wrap:wrap;gap:9px;align-items:center;margin-top:13px}.timeline-message{color:var(--muted);font-size:13px;line-height:1.7}
-.timeline-filter-actions{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0 12px}.timeline-filter-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px}
-.timeline-filter-chip{--c:#999;display:flex;align-items:center;gap:9px;padding:10px 12px;border-radius:14px;background:rgba(255,255,255,.72);border:1px solid var(--line);font-size:13px;font-weight:850;cursor:pointer}
-.timeline-filter-chip input{width:19px;height:19px;accent-color:var(--c)}.timeline-filter-face{width:30px;height:30px;border-radius:9px;display:grid;place-items:center;background:var(--c);overflow:hidden;box-shadow:inset 0 0 0 1px rgba(255,255,255,.65);flex:0 0 auto}.timeline-filter-face img{width:100%;height:100%;object-fit:contain;display:block}
-.timeline-shell{--lane-w:180px;--time-w:112px;overflow:auto;border-radius:24px;border:1px solid var(--line);box-shadow:var(--glass-shadow-soft);background:rgba(255,255,255,.72);max-height:76vh;position:relative}
-.timeline-board{width:max-content;min-width:100%;position:relative}.timeline-header{position:sticky;top:0;z-index:20;display:grid;grid-template-columns:var(--time-w) repeat(var(--lane-count), var(--lane-w));background:rgba(248,250,255,.96);border-bottom:1px solid var(--line);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
-.timeline-corner{position:sticky;left:0;z-index:30;min-height:92px;display:grid;place-items:center;background:rgba(248,250,255,.98);border-right:1px solid var(--line);font-weight:900;color:var(--muted);font-size:13px}
-.timeline-header-char{min-height:92px;display:grid;place-items:center;gap:5px;padding:8px;border-right:1px dashed rgba(45,91,158,.42)}.timeline-header-char .timeline-filter-face{width:48px;height:48px;border-radius:16px;font-size:22px}.timeline-header-char b{line-height:1.1;font-size:13px;text-align:center;max-width:150px;overflow:hidden;text-overflow:ellipsis}
-.timeline-row{display:grid;grid-template-columns:var(--time-w) repeat(var(--lane-count), var(--lane-w));min-height:104px;border-bottom:1px solid var(--line);position:relative}
-.timeline-time-cell{position:sticky;left:0;z-index:10;display:grid;place-items:center;background:rgba(255,255,255,.96);border-right:1px solid var(--line)}
-.timeline-time-box{width:86px;min-height:72px;border-radius:14px;background:linear-gradient(180deg,#315fa1,#254f8d);color:white;display:grid;place-items:center;text-align:center;font-weight:950;font-size:17px;box-shadow:0 10px 22px rgba(45,91,158,.22);padding:8px;line-height:1.25}
-.timeline-lane-cell{--c:#999;position:relative;min-height:104px;padding:9px 7px;background:rgba(255,255,255,.45);border-right:1px dashed rgba(45,91,158,.28)}
-.timeline-event{--c:#2d5b9e;min-height:34px;border:2px solid color-mix(in srgb,var(--c) 78%,#315fa1);background:color-mix(in srgb,var(--c) 12%,#fff);border-radius:9px;padding:7px 9px;color:#243042;font-size:13px;font-weight:850;line-height:1.35;box-shadow:0 7px 16px rgba(40,55,90,.09)}
-.timeline-event textarea{width:100%;min-height:30px;border:0;resize:vertical;background:transparent;font:inherit;color:inherit;line-height:1.45;padding:0}.timeline-event textarea:focus{outline:0}.timeline-event:focus-within{box-shadow:0 0 0 3px color-mix(in srgb,var(--c) 28%,transparent),0 7px 16px rgba(40,55,90,.09);background:#fff}.timeline-event.empty-event{opacity:.42}.timeline-event.empty-event:focus-within{opacity:1}
-.timeline-save-bottom{margin:14px 0 0;display:flex;justify-content:center}.timeline-save-bottom button{min-width:240px}.timeline-save-hint{margin-top:8px;text-align:center;color:var(--muted);font-size:12px}.timeline-empty-years-message{padding:30px 18px;color:var(--muted);text-align:center;font-weight:850;background:rgba(255,255,255,.72)}.timeline-mobile-hint{display:none;margin-top:8px;padding:10px 12px;border-radius:14px;background:#fff8e8;border:1px solid #ead7aa;color:#785612;font-size:12px;line-height:1.6}
-@media(max-width:760px){.timeline-panel{padding:16px}.timeline-shell{--lane-w:150px;--time-w:92px;max-height:72vh;border-radius:20px}.timeline-corner{min-height:78px}.timeline-header-char{min-height:78px;padding:6px}.timeline-header-char .timeline-filter-face{width:40px;height:40px;border-radius:13px}.timeline-header-char b{font-size:12px}.timeline-row,.timeline-lane-cell{min-height:124px}.timeline-time-box{width:74px;min-height:88px;font-size:15px;border-radius:12px}.timeline-event{font-size:12px;padding:6px 7px}.timeline-filter-list{grid-template-columns:1fr}.timeline-save-bottom button{width:100%}.timeline-mobile-hint{display:block}}
+.timeline-panel{padding:18px}
+.timeline-toolbar{display:flex;flex-wrap:wrap;gap:9px;align-items:center;margin-top:13px}
+.timeline-message{color:var(--muted);font-size:13px;line-height:1.7}
+.timeline-mobile-hint{display:none;margin-top:8px;padding:10px 12px;border-radius:14px;background:#fff8e8;border:1px solid #ead7aa;color:#785612;font-size:12px;line-height:1.6}
 
-/* v146: read-first timeline cards */
-.timeline-shell{--lane-w:190px;--time-w:120px;}
-.timeline-corner{min-height:82px!important;}
-.timeline-header-char{min-height:82px!important;grid-template-rows:auto auto!important;padding:7px 8px!important;}
-.timeline-header-char .timeline-filter-face{width:42px!important;height:42px!important;border-radius:14px!important;}
-.timeline-row{min-height:108px!important;}
-.timeline-time-cell{padding:8px!important;display:flex!important;align-items:stretch!important;}
-.timeline-time-box{width:100%!important;min-height:72px!important;display:flex!important;flex-direction:column!important;}
+.timeline-filter-actions{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0 12px}
+.timeline-filter-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px 14px}
+.timeline-filter-chip{--c:#999;display:flex;align-items:center;gap:9px;padding:6px 2px;border:0;background:transparent;font-size:13px;font-weight:850;cursor:pointer}
+.timeline-filter-chip input{width:18px;height:18px;accent-color:var(--c)}
+.timeline-face{width:30px;height:30px;border-radius:9px;display:grid;place-items:center;background:var(--c);overflow:hidden;box-shadow:inset 0 0 0 1px rgba(255,255,255,.65);flex:0 0 auto}
+.timeline-face img{width:100%;height:100%;object-fit:contain;display:block}
 
-.timeline-lane-cell{min-height:108px!important;}
-.timeline-age-chip{display:grid;place-items:center;margin:0;padding:0;background:color-mix(in srgb,var(--c) 36%,#ffffff);border:0;border-bottom:1px solid color-mix(in srgb,var(--c) 36%,#d6deea);border-radius:0;color:#202532;font-size:13px;font-weight:950}
-.timeline-event-card{--c:#2d5b9e;border:2px solid color-mix(in srgb,var(--c) 65%,#d9e4ef);background:color-mix(in srgb,var(--c) 9%,#fff);border-radius:12px;padding:8px;color:#243042;font-size:13px;font-weight:850;line-height:1.55;box-shadow:0 7px 16px rgba(40,55,90,.08);cursor:pointer;min-height:40px;white-space:pre-wrap;overflow-wrap:anywhere;max-height:118px;overflow:auto;}
-.timeline-event-card.empty{opacity:.38;color:var(--muted);font-weight:800;}
-.timeline-event-card:hover{background:#fff;}
-.timeline-event-card.editing{opacity:1;background:white;cursor:auto;max-height:none;}
-.timeline-event-card textarea{width:100%;min-height:90px;border:1px solid var(--line);resize:vertical;background:#fbfcff;font:inherit;color:inherit;line-height:1.55;padding:8px;border-radius:9px;}
-.timeline-event-actions{display:flex;gap:7px;margin-top:7px;justify-content:flex-end;}
-.timeline-event-actions button{padding:6px 10px;font-size:12px;border-radius:999px;}
-@media(max-width:900px){.timeline-shell{--lane-w:170px;--time-w:108px}.timeline-header-char b{font-size:12px}.timeline-event-card{font-size:12px}}
-@media(max-width:760px){.timeline-shell{--lane-w:152px!important;--time-w:92px!important}.timeline-corner{min-height:74px!important}.timeline-header-char{min-height:74px!important;padding:6px!important}.timeline-header-char .timeline-filter-face{width:36px!important;height:36px!important;border-radius:12px!important}.timeline-header-char b{font-size:11px!important}.timeline-row,.timeline-lane-cell{min-height:116px!important}.timeline-time-cell{padding:6px!important}.timeline-time-box{min-height:84px!important;font-size:15px!important;border-radius:12px!important}.timeline-event-card{font-size:12px;padding:8px;line-height:1.55}.timeline-age-chip{font-size:11px}}
+.timeline-shell{--lane-w:210px;--time-w:112px;overflow:auto;border-radius:22px;border:1px solid var(--line);box-shadow:var(--glass-shadow-soft);background:rgba(255,255,255,.78);max-height:76vh}
+.timeline-board{width:max-content;min-width:100%;position:relative}
+.timeline-header{position:sticky;top:0;z-index:20;display:grid;grid-template-columns:var(--time-w) repeat(var(--lane-count), var(--lane-w));background:#f8fbff;border-bottom:1px solid #cfd8e6}
+.timeline-corner{position:sticky;left:0;z-index:30;min-height:78px;display:grid;place-items:center;background:#f8fbff;border-right:1px solid #cfd8e6;color:var(--muted);font-size:13px;font-weight:900}
+.timeline-header-char{min-height:78px;display:grid;place-items:center;gap:4px;padding:7px;border-right:1px solid #d6deea}
+.timeline-header-char .timeline-face{width:38px;height:38px;border-radius:11px;font-size:19px}
+.timeline-header-char b{line-height:1.1;font-size:13px;text-align:center;max-width:180px;overflow:hidden;text-overflow:ellipsis}
 
+.timeline-row{display:grid;grid-template-columns:var(--time-w) repeat(var(--lane-count), var(--lane-w));min-height:132px;border-bottom:1px solid #cfd8e6}
+.timeline-time-cell{position:sticky;left:0;z-index:10;display:grid;place-items:stretch;background:#fff;border-right:1px solid #cfd8e6}
+.timeline-time-box{display:grid;place-items:center;min-height:100%;background:#3f86c4;color:#fff;text-align:center;font-weight:950;font-size:18px;padding:10px;line-height:1.25}
+
+.timeline-lane-cell{--c:#999;position:relative;min-height:132px;display:grid;grid-template-rows:34px minmax(98px, auto);background:#fff;border-right:1px solid #d6deea}
+.timeline-age-bar{display:grid;place-items:center;background:color-mix(in srgb,var(--c) 36%,#ffffff);border-bottom:1px solid color-mix(in srgb,var(--c) 36%,#d6deea);color:#202532;font-size:13px;font-weight:950;text-align:center}
+.timeline-read-cell{min-height:98px;padding:9px 10px;background:color-mix(in srgb,var(--c) 10%,#fff);color:#243042;font-size:13px;font-weight:800;line-height:1.65;white-space:pre-wrap;overflow-wrap:anywhere;text-align:left}
+.timeline-read-cell.empty{color:#a0a6b4;font-weight:800}
+
+.timeline-edit-field{display:none;background:color-mix(in srgb,var(--c) 10%,#fff)}
+.timeline-edit-field textarea{width:100%;min-height:98px;border:0;border-radius:0;padding:9px 10px;resize:vertical;background:transparent;color:#243042;font:inherit;font-size:13px;font-weight:800;line-height:1.55;text-align:left}
+.timeline-edit-field textarea:focus{outline:3px solid color-mix(in srgb,var(--c) 30%,transparent);background:#fff}
+
+body.timeline-edit-mode .timeline-read-cell{display:none}
+body.timeline-edit-mode .timeline-edit-field{display:block}
+
+.timeline-lane-cell.unborn-empty{--c:#b8bec8!important;background:#f2f4f7}
+.timeline-lane-cell.unborn-empty .timeline-age-bar{background:#d9dde4!important;color:#7f8798;border-bottom-color:#cbd1db!important}
+.timeline-lane-cell.unborn-empty .timeline-read-cell{background:#f5f6f8!important;color:#a0a6b4}
+.timeline-lane-cell.unborn-empty .timeline-edit-field{background:#f5f6f8!important}
+.timeline-lane-cell.unborn-empty textarea{color:#7f8798}
+.timeline-lane-cell.unborn-filled .timeline-age-bar{background:color-mix(in srgb,var(--c) 36%,#ffffff)}
+.timeline-lane-cell.unborn-filled .timeline-read-cell,.timeline-lane-cell.unborn-filled .timeline-edit-field{background:color-mix(in srgb,var(--c) 10%,#fff)}
+
+.timeline-empty-message{padding:30px 18px;color:var(--muted);text-align:center;font-weight:850;background:rgba(255,255,255,.72)}
+.timeline-save-bottom{margin:14px 0 0;display:flex;justify-content:center}
+.timeline-save-bottom .timeline-save-box{display:grid;gap:8px;justify-items:center}
+.timeline-save-bottom button{min-width:240px}
+.timeline-save-hint{text-align:center;color:var(--muted);font-size:12px}
+
+@media(max-width:900px){
+  .timeline-shell{--lane-w:180px;--time-w:104px}
+  .timeline-header-char b{font-size:12px}
+}
+@media(max-width:760px){
+  .timeline-panel{padding:16px}
+  .timeline-mobile-hint{display:block}
+  .timeline-filter-list{grid-template-columns:1fr 1fr;gap:8px 10px}
+  .timeline-shell{--lane-w:160px;--time-w:88px;max-height:72vh;border-radius:20px}
+  .timeline-corner{min-height:70px}
+  .timeline-header-char{min-height:70px;padding:6px}
+  .timeline-header-char .timeline-face{width:34px;height:34px;border-radius:10px}
+  .timeline-header-char b{font-size:11px}
+  .timeline-row{min-height:124px}
+  .timeline-time-box{font-size:15px;padding:7px}
+  .timeline-lane-cell{min-height:124px;grid-template-rows:30px minmax(94px, auto)}
+  .timeline-age-bar{font-size:11px}
+  .timeline-read-cell,.timeline-edit-field textarea{font-size:12px;padding:8px}
+  .timeline-save-bottom button{width:100%}
+}
 </style>
 </head>
+
 <body>
-<header><div class="header-inner"><div><h1 class="site-brand" id="siteTitle">自陣キャラ図鑑</h1></div><div class="header-buttons"><a class="header-button" href="./index.html">キャラクター</a><a class="header-button" href="./compare.html">キャラQ&A</a><a class="header-button" href="./stats.html">ステータス</a><a class="header-button" href="./timeline.html">時系列</a><a class="header-button" href="./relationship.html">相関図</a></div></div></header>
+<header>
+  <div class="header-inner">
+    <div><h1 class="site-brand" id="siteTitle">自陣キャラ図鑑</h1></div>
+    <div class="header-buttons">
+      <a class="header-button" href="./index.html">キャラクター</a>
+      <a class="header-button" href="./compare.html">キャラQ&A</a>
+      <a class="header-button" href="./stats.html">ステータス</a>
+      <a class="header-button" href="./timeline.html">時系列</a>
+      <a class="header-button" href="./relationship.html">相関図</a>
+    </div>
+  </div>
+</header>
+
 <main>
-<section class="panel timeline-panel"><div class="page-title-row"><h2>時系列</h2><span class="info-wrap"><button class="info-button" type="button" aria-label="時系列の説明"><svg class="info-svg" viewBox="0 0 1200 1200" aria-hidden="true" focusable="false"><path d="M600 20C279.7 20 20 279.7 20 600s259.7 580 580 580 580-259.7 580-580S920.3 20 600 20zm0 70c281.6 0 510 228.4 510 510s-228.4 510-510 510S90 881.6 90 600 318.4 90 600 90z"/><circle cx="600" cy="285" r="100"/><rect x="500" y="430" width="200" height="520" rx="95"/></svg></button><span class="info-pop">キャラクターごとの列に出来事を置く時系列表です。キャラクターの年齢をもとに最過去から現在までを自動表示します。出来事を入力したら保存してください。</span></span></div><div class="timeline-toolbar"><button class="secondary-button" onclick="loadTimeline()">再読み込み</button><button class="secondary-button" id="hideEmptyYearsBtn" onclick="toggleEmptyYears()">出来事のない年を非表示</button><span id="message" class="timeline-message">読み込み中...</span></div><div class="timeline-mobile-hint">スマホでは左右にスクロールして、各キャラの列を確認できます。「編集する」を押すと全体が入力欄になります。</div></section>
-<section class="panel timeline-filter-panel"><div class="page-title-row"><h2>表示キャラクター</h2></div><div class="timeline-filter-actions"><button class="secondary-button" onclick="selectAllTimelineCharacters()">全員表示</button></div><div id="timelineCharacterFilter" class="timeline-filter-list"></div></section>
-<section class="timeline-shell" id="timelineShell"><div class="timeline-board" id="timelineBoard"></div></section>
-<section class="timeline-save-bottom"><div><button id="timelineEditButton" onclick="enterTimelineEditMode()">編集する</button><button id="timelineSaveButton" onclick="saveTimeline()" style="display:none">時系列を保存する</button><div class="timeline-save-hint" id="timelineSaveHint">閲覧モードです。編集する時は「編集する」を押してください。</div></div></section>
+  <section class="panel timeline-panel">
+    <div class="page-title-row">
+      <h2>時系列</h2>
+      <span class="info-wrap">
+        <button class="info-button" type="button" aria-label="時系列の説明">
+          <svg class="info-svg" viewBox="0 0 1200 1200" aria-hidden="true" focusable="false">
+            <path d="M600 20C279.7 20 20 279.7 20 600s259.7 580 580 580 580-259.7 580-580S920.3 20 600 20zm0 70c281.6 0 510 228.4 510 510s-228.4 510-510 510S90 881.6 90 600 318.4 90 600 90z"/>
+            <circle cx="600" cy="285" r="100"/>
+            <rect x="500" y="430" width="200" height="520" rx="95"/>
+          </svg>
+        </button>
+        <span class="info-pop">通常時は読むための表表示です。「編集する」を押すと全体が入力欄になり、「保存する」で表示に戻ります。</span>
+      </span>
+    </div>
+    <div class="timeline-toolbar">
+      <button class="secondary-button" onclick="loadTimeline()">再読み込み</button>
+      <button class="secondary-button" id="hideEmptyYearsBtn" onclick="toggleEmptyYears()">出来事のない年を非表示</button>
+      <span id="message" class="timeline-message">読み込み中...</span>
+    </div>
+    <div class="timeline-mobile-hint">スマホでは左右にスクロールして、各キャラの列を確認できます。</div>
+  </section>
+
+  <section class="panel">
+    <div class="page-title-row"><h2>表示キャラクター</h2></div>
+    <div class="timeline-filter-actions">
+      <button class="secondary-button" onclick="selectAllTimelineCharacters()">全員表示</button>
+    </div>
+    <div id="timelineCharacterFilter" class="timeline-filter-list"></div>
+  </section>
+
+  <section class="timeline-shell" id="timelineShell">
+    <div class="timeline-board" id="timelineBoard"></div>
+  </section>
+
+  <section class="timeline-save-bottom">
+    <div class="timeline-save-box">
+      <button id="timelineEditButton" onclick="enterTimelineEditMode()">編集する</button>
+      <button id="timelineSaveButton" onclick="saveTimeline()" style="display:none">時系列を保存する</button>
+      <div class="timeline-save-hint" id="timelineSaveHint">閲覧モードです。編集する時は「編集する」を押してください。</div>
+    </div>
+  </section>
 </main>
+
 <div class="unsaved-pill">未保存の変更があります</div>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="./config.js?v=147"></script><script src="./common.js?v=147"></script><script>initSiteTitle();</script>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="./config.js?v=148"></script>
+<script src="./common.js?v=148"></script>
+<script>initSiteTitle();</script>
+
 <script>
-let timelineCharacters=[],timelineEntries={},timelineEntryMeta={},timelineDirtyKeys=new Set(),selectedTimelineCharacters=new Set(),hideEmptyYears=false;
-async function loadTimeline(){message.textContent="読み込み中...";const t=await team();const [cr,er]=await Promise.all([sb.from("characters").select("id,name,furigana,emoji,icon_url,image_color,basic,created_at,sort_order").eq("team_id",t.id).order("sort_order",{ascending:true,nullsFirst:false}).order("created_at",{ascending:true}),sb.from("timeline_entries").select("*")]);if(cr.error)throw cr.error;if(er.error)throw er.error;timelineCharacters=sortedCharacters(cr.data||[]).map(ch=>({...ch,currentAge:getCharacterAge(ch)})).filter(ch=>Number.isFinite(ch.currentAge));const ids=new Set(timelineCharacters.map(ch=>ch.id));selectedTimelineCharacters=new Set([...selectedTimelineCharacters].filter(id=>ids.has(id)));if(selectedTimelineCharacters.size===0)selectedTimelineCharacters=new Set(timelineCharacters.map(ch=>ch.id));timelineEntries={};timelineEntryMeta={};timelineDirtyKeys=new Set();(er.data||[]).forEach(row=>{const y=Number(row.years_ago);if(!timelineEntries[row.character_id])timelineEntries[row.character_id]={};if(!timelineEntryMeta[row.character_id])timelineEntryMeta[row.character_id]={};timelineEntries[row.character_id][y]=row.text||"";timelineEntryMeta[row.character_id][y]=row.updated_at||""});clearUnsavedChanges();renderTimelineFilter();renderTimelineBoard();message.textContent="読み込みました"}
-function getCharacterAge(ch){const raw=ch?.basic?.age;if(raw===undefined||raw===null||raw==="")return NaN;const n=Number(String(raw).replace(/[^\d.-]/g,""));return Number.isFinite(n)?n:NaN}
-function visibleTimelineCharacters(){return timelineCharacters.filter(ch=>selectedTimelineCharacters.has(ch.id))}
-function buildYearList(){if(!timelineCharacters.length)return[];const maxAge=Math.max(...timelineCharacters.map(c=>Number(c.currentAge)||0));return Array.from({length:maxAge+1},(_,i)=>maxAge-i)}
-function timelineKey(id,y){return `${id}::${y}`}
-function hasYearEvents(y,chars){return chars.some(ch=>String(timelineEntries?.[ch.id]?.[y]||"").trim())}
-function yearLabel(y){return Number(y)===0?"現在":`${y}年前`}
-function characterFace(ch,cls="timeline-filter-face"){const color=col(ch.image_color);if(ch.icon_url)return`<span class="${cls}" style="--c:${color};"><img src="${e(ch.icon_url)}" alt="icon"></span>`;return`<span class="${cls}" style="--c:${color};">${e(firstEmoji(ch.emoji))}</span>`}
-function renderTimelineFilter(){const box=timelineCharacterFilter;if(!timelineCharacters.length){box.innerHTML='<p class="note">年齢が登録されているキャラクターがまだいません。</p>';return}box.innerHTML=timelineCharacters.map(ch=>{const color=col(ch.image_color),checked=selectedTimelineCharacters.has(ch.id)?"checked":"";return`<label class="timeline-filter-chip" style="--c:${color};"><input type="checkbox" value="${ch.id}" ${checked} onchange="toggleTimelineCharacter(this)">${characterFace(ch)}<span>${e(ch.name||"名前未設定")}</span></label>`}).join("")}
-function toggleTimelineCharacter(input){if(input.checked)selectedTimelineCharacters.add(input.value);else selectedTimelineCharacters.delete(input.value);renderTimelineBoard()}
-function selectAllTimelineCharacters(){selectedTimelineCharacters=new Set(timelineCharacters.map(ch=>ch.id));renderTimelineFilter();renderTimelineBoard()}
-function toggleEmptyYears(){hideEmptyYears=!hideEmptyYears;hideEmptyYearsBtn.textContent=hideEmptyYears?"すべての年を表示":"出来事のない年を非表示";renderTimelineBoard()}
-function renderTimelineBoard(){const chars=visibleTimelineCharacters(),allYears=buildYearList(),years=hideEmptyYears?allYears.filter(y=>hasYearEvents(y,chars)):allYears;if(!timelineCharacters.length){timelineBoard.innerHTML='<div class="timeline-empty-years-message">年齢が登録されているキャラクターがまだいません。</div>';return}if(!chars.length){timelineBoard.innerHTML='<div class="timeline-empty-years-message">表示するキャラクターを選んでください。</div>';return}timelineBoard.style.setProperty("--lane-count",chars.length);const header=`<div class="timeline-header"><div class="timeline-corner">時系列</div>${chars.map(ch=>`<div class="timeline-header-char" style="--c:${col(ch.image_color)}">${characterFace(ch)}<b>${e(ch.name||"名前未設定")}</b></div>`).join("")}</div>`;const rows=years.length?years.map(y=>renderTimelineRow(y,chars)).join(""):'<div class="timeline-empty-years-message">表示できる出来事がありません。「すべての年を表示」に戻して入力してください。</div>';timelineBoard.innerHTML=header+rows}
-function renderTimelineRow(y,chars){return`<div class="timeline-row" data-years-ago="${y}"><div class="timeline-time-cell"><div class="timeline-time-box">${e(yearLabel(y))}</div></div>${chars.map(ch=>renderTimelineCell(ch,y)).join("")}</div>`}
-function shortName(name){return e(String(name||"").split(/[・\\s]/)[0]||name||"")}
-function ageLabel(ch,y){const age=Number(ch.currentAge)-Number(y);return age<0?"未出生":`${age}歳`}
-function renderTimelineCell(ch,y){const color=col(ch.image_color),text=timelineEntries?.[ch.id]?.[y]||"",updatedAt=timelineEntryMeta?.[ch.id]?.[y]||"",hasText=!!text.trim(),unborn=(Number(ch.currentAge)-Number(y))<0,unbornClass=unborn?(hasText?"unborn-filled":"unborn-empty"):"",placeholder=unborn?"未出生":"この時期の出来事";return`<div class="timeline-lane-cell ${unbornClass}" style="--c:${color};" data-character="${ch.id}" data-years-ago="${y}"><div class="timeline-age-chip">${e(ageLabel(ch,y))}</div><div class="timeline-event-card read-only ${hasText?"":"empty"}" style="--c:${color}">${hasText?e(text):e(placeholder)}</div><div class="timeline-event-card edit-only" style="--c:${color}"><textarea data-original="${c(text)}" data-updated-at="${e(updatedAt)}" oninput="markTimelineChanged(this)" placeholder="${e(placeholder)}">${e(text)}</textarea></div></div>`}
-function openTimelineEditor(card){if(card.classList.contains("editing"))return;const cell=card.closest("[data-character][data-years-ago]"),template=cell.querySelector(".timeline-template"),original=card.textContent;card.classList.add("editing");card.innerHTML=template.innerHTML+`<div class="timeline-event-actions"><button type="button" class="secondary-button" onclick="cancelTimelineEditor(event,this)">閉じる</button></div>`;const textarea=card.querySelector("textarea");textarea.focus()}
-function cancelTimelineEditor(event,btn){event.stopPropagation();const card=btn.closest(".timeline-event-card"),textarea=card.querySelector("textarea"),text=textarea?textarea.value.trim():"";card.classList.remove("editing");card.classList.toggle("empty",!text);card.textContent=text||"この時期の出来事"}
-function markTimelineChanged(textarea){const box=textarea.closest("[data-character][data-years-ago]");if(!box)return;const key=timelineKey(box.dataset.character,Number(box.dataset.yearsAgo));textarea.dataset.dirty="1";timelineDirtyKeys.add(key);const id=box.dataset.character,y=Number(box.dataset.yearsAgo);if(!timelineEntries[id])timelineEntries[id]={};timelineEntries[id][y]=textarea.value.trim();setUnsavedChanges(true);message.textContent="未保存の変更があります"}
-function collectTimelineEntries(){const rows=[];timelineDirtyKeys.forEach(key=>{const [id,yRaw]=String(key).split("::"),y=Number(yRaw);if(!id||!Number.isFinite(y))return;rows.push({character_id:id,years_ago:y,text:(timelineEntries?.[id]?.[y]||"").trim(),original_updated_at:timelineEntryMeta?.[id]?.[y]||"",updated_at:new Date().toISOString()})});return rows}
-async function assertTimelineUnchanged(rows){for(const row of rows){const {data,error}=await sb.from("timeline_entries").select("updated_at").eq("character_id",row.character_id).eq("years_ago",row.years_ago).maybeSingle();if(error)throw error;const known=row.original_updated_at||"",current=data?.updated_at||"";if(known&&current&&!sameTimestamp(current,known))throw new Error("他の人が同じ時系列セルを先に更新しています。上書きを防ぐため保存を止めました。ページを再読み込みしてください。");if(!known&&current)throw new Error("他の人が同じ時系列セルを先に作成しています。上書きを防ぐため保存を止めました。ページを再読み込みしてください。")}}
-function enterTimelineEditMode(){document.body.classList.add("timeline-edit-mode");const eb=document.getElementById("timelineEditButton"),sb=document.getElementById("timelineSaveButton"),hint=document.getElementById("timelineSaveHint");if(eb)eb.style.display="none";if(sb)sb.style.display="";if(hint)hint.textContent="編集モードです。入力後は保存してください。";}
-function leaveTimelineEditMode(){document.body.classList.remove("timeline-edit-mode");const eb=document.getElementById("timelineEditButton"),sb=document.getElementById("timelineSaveButton"),hint=document.getElementById("timelineSaveHint");if(eb)eb.style.display="";if(sb)sb.style.display="none";if(hint)hint.textContent="閲覧モードです。編集する時は「編集する」を押してください。";}
-async function saveTimeline(){message.textContent="保存中...";const rows=collectTimelineEntries();if(rows.length===0){message.textContent="保存する変更がありません";leaveTimelineEditMode();return}try{await assertTimelineUnchanged(rows)}catch(error){console.error(error);message.textContent=error.message;alert(error.message);return}for(const src of rows){const {original_updated_at,...row}=src;const existing=await sb.from("timeline_entries").select("character_id,years_ago").eq("character_id",row.character_id).eq("years_ago",row.years_ago).maybeSingle();if(existing.error){message.textContent="保存確認に失敗しました："+existing.error.message;return}let result;if(existing.data){result=await sb.from("timeline_entries").update({text:row.text,updated_at:row.updated_at}).eq("character_id",row.character_id).eq("years_ago",row.years_ago)}else{result=await sb.from("timeline_entries").insert(row)}if(result.error){message.textContent="保存に失敗しました："+result.error.message;return}}message.textContent="保存しました";clearUnsavedChanges();leaveTimelineEditMode();await loadTimeline()}
-loadTimeline().catch(error=>{console.error(error);message.textContent="読み込みに失敗しました："+error.message});
+let timelineCharacters = [];
+let timelineEntries = {};
+let timelineEntryMeta = {};
+let timelineDirtyKeys = new Set();
+let selectedTimelineCharacters = new Set();
+let hideEmptyYears = false;
+
+async function loadTimeline(){
+  document.getElementById("message").textContent = "読み込み中...";
+  const teamData = await team();
+
+  const [charactersResult, entriesResult] = await Promise.all([
+    sb.from("characters")
+      .select("id,name,furigana,emoji,icon_url,image_color,basic,created_at,sort_order")
+      .eq("team_id", teamData.id)
+      .order("sort_order", { ascending:true, nullsFirst:false })
+      .order("created_at", { ascending:true }),
+    sb.from("timeline_entries").select("*")
+  ]);
+
+  if(charactersResult.error) throw charactersResult.error;
+  if(entriesResult.error) throw entriesResult.error;
+
+  timelineCharacters = sortedCharacters(charactersResult.data || [])
+    .map(character => ({ ...character, currentAge:getCharacterAge(character) }))
+    .filter(character => Number.isFinite(character.currentAge));
+
+  const availableIds = new Set(timelineCharacters.map(character => character.id));
+  selectedTimelineCharacters = new Set([...selectedTimelineCharacters].filter(id => availableIds.has(id)));
+  if(selectedTimelineCharacters.size === 0){
+    selectedTimelineCharacters = new Set(timelineCharacters.map(character => character.id));
+  }
+
+  timelineEntries = {};
+  timelineEntryMeta = {};
+  timelineDirtyKeys = new Set();
+
+  (entriesResult.data || []).forEach(row => {
+    const yearsAgo = Number(row.years_ago);
+    if(!timelineEntries[row.character_id]) timelineEntries[row.character_id] = {};
+    if(!timelineEntryMeta[row.character_id]) timelineEntryMeta[row.character_id] = {};
+    timelineEntries[row.character_id][yearsAgo] = row.text || "";
+    timelineEntryMeta[row.character_id][yearsAgo] = row.updated_at || "";
+  });
+
+  clearUnsavedChanges();
+  leaveTimelineEditMode();
+  renderTimelineFilter();
+  renderTimelineBoard();
+  document.getElementById("message").textContent = "読み込みました";
+}
+
+function getCharacterAge(character){
+  const raw = character?.basic?.age;
+  if(raw === undefined || raw === null || raw === "") return NaN;
+  const number = Number(String(raw).replace(/[^\d.-]/g, ""));
+  return Number.isFinite(number) ? number : NaN;
+}
+
+function buildYearList(){
+  if(!timelineCharacters.length) return [];
+  const maxAge = Math.max(...timelineCharacters.map(c => Number(c.currentAge) || 0));
+  return Array.from({length:maxAge + 1}, (_, i) => maxAge - i);
+}
+
+function visibleTimelineCharacters(){
+  return timelineCharacters.filter(character => selectedTimelineCharacters.has(character.id));
+}
+
+function timelineKey(characterId, yearsAgo){
+  return `${characterId}::${yearsAgo}`;
+}
+
+function hasYearEvents(year, characters){
+  return characters.some(character => String(timelineEntries?.[character.id]?.[year] || "").trim());
+}
+
+function yearLabel(year){
+  return Number(year) === 0 ? "現在" : `${year}年前`;
+}
+
+function ageLabel(character, yearsAgo){
+  const age = Number(character.currentAge) - Number(yearsAgo);
+  return age < 0 ? "未出生" : `${age}歳`;
+}
+
+function characterFace(character){
+  const color = col(character.image_color);
+  if(character.icon_url){
+    return `<span class="timeline-face" style="--c:${color};"><img src="${e(character.icon_url)}" alt="icon"></span>`;
+  }
+  return `<span class="timeline-face" style="--c:${color};">${e(firstEmoji(character.emoji))}</span>`;
+}
+
+function renderTimelineFilter(){
+  const box = document.getElementById("timelineCharacterFilter");
+  if(!timelineCharacters.length){
+    box.innerHTML = '<p class="note">年齢が登録されているキャラクターがまだいません。</p>';
+    return;
+  }
+
+  box.innerHTML = timelineCharacters.map(character => {
+    const color = col(character.image_color);
+    const checked = selectedTimelineCharacters.has(character.id) ? "checked" : "";
+    return `
+      <label class="timeline-filter-chip" style="--c:${color};">
+        <input type="checkbox" value="${character.id}" ${checked} onchange="toggleTimelineCharacter(this)">
+        ${characterFace(character)}
+        <span>${e(character.name || "名前未設定")}</span>
+      </label>
+    `;
+  }).join("");
+}
+
+function toggleTimelineCharacter(input){
+  if(input.checked) selectedTimelineCharacters.add(input.value);
+  else selectedTimelineCharacters.delete(input.value);
+  renderTimelineBoard();
+}
+
+function selectAllTimelineCharacters(){
+  selectedTimelineCharacters = new Set(timelineCharacters.map(character => character.id));
+  renderTimelineFilter();
+  renderTimelineBoard();
+}
+
+function toggleEmptyYears(){
+  hideEmptyYears = !hideEmptyYears;
+  const button = document.getElementById("hideEmptyYearsBtn");
+  if(button) button.textContent = hideEmptyYears ? "すべての年を表示" : "出来事のない年を非表示";
+  renderTimelineBoard();
+}
+
+function renderTimelineBoard(){
+  const board = document.getElementById("timelineBoard");
+  const characters = visibleTimelineCharacters();
+  const allYears = buildYearList();
+  const years = hideEmptyYears ? allYears.filter(year => hasYearEvents(year, characters)) : allYears;
+
+  if(!timelineCharacters.length){
+    board.innerHTML = '<div class="timeline-empty-message">年齢が登録されているキャラクターがまだいません。</div>';
+    return;
+  }
+  if(!characters.length){
+    board.innerHTML = '<div class="timeline-empty-message">表示するキャラクターを選んでください。</div>';
+    return;
+  }
+
+  board.style.setProperty("--lane-count", characters.length);
+
+  const header = `
+    <div class="timeline-header">
+      <div class="timeline-corner">時系列</div>
+      ${characters.map(character => `
+        <div class="timeline-header-char" style="--c:${col(character.image_color)}">
+          ${characterFace(character)}
+          <b>${e(character.name || "名前未設定")}</b>
+        </div>
+      `).join("")}
+    </div>
+  `;
+
+  const rows = years.length
+    ? years.map(year => renderTimelineRow(year, characters)).join("")
+    : '<div class="timeline-empty-message">表示できる出来事がありません。「すべての年を表示」に戻して入力してください。</div>';
+
+  board.innerHTML = header + rows;
+}
+
+function renderTimelineRow(year, characters){
+  return `
+    <div class="timeline-row" data-years-ago="${year}">
+      <div class="timeline-time-cell"><div class="timeline-time-box">${e(yearLabel(year))}</div></div>
+      ${characters.map(character => renderTimelineCell(character, year)).join("")}
+    </div>
+  `;
+}
+
+function renderTimelineCell(character, yearsAgo){
+  const color = col(character.image_color);
+  const text = timelineEntries?.[character.id]?.[yearsAgo] || "";
+  const updatedAt = timelineEntryMeta?.[character.id]?.[yearsAgo] || "";
+  const hasText = !!text.trim();
+  const unborn = (Number(character.currentAge) - Number(yearsAgo)) < 0;
+  const unbornClass = unborn ? (hasText ? "unborn-filled" : "unborn-empty") : "";
+  const placeholder = unborn ? "未出生" : "この時期の出来事";
+
+  return `
+    <div class="timeline-lane-cell ${unbornClass}" style="--c:${color};" data-character="${character.id}" data-years-ago="${yearsAgo}">
+      <div class="timeline-age-bar">${e(ageLabel(character, yearsAgo))}</div>
+      <div class="timeline-read-cell ${hasText ? "" : "empty"}">${hasText ? e(text) : e(placeholder)}</div>
+      <div class="timeline-edit-field">
+        <textarea
+          data-original="${c(text)}"
+          data-updated-at="${e(updatedAt)}"
+          oninput="markTimelineChanged(this)"
+          placeholder="${e(placeholder)}">${e(text)}</textarea>
+      </div>
+    </div>
+  `;
+}
+
+function enterTimelineEditMode(){
+  document.body.classList.add("timeline-edit-mode");
+  const editButton = document.getElementById("timelineEditButton");
+  const saveButton = document.getElementById("timelineSaveButton");
+  const hint = document.getElementById("timelineSaveHint");
+  if(editButton) editButton.style.display = "none";
+  if(saveButton) saveButton.style.display = "";
+  if(hint) hint.textContent = "編集モードです。入力後は保存してください。";
+}
+
+function leaveTimelineEditMode(){
+  document.body.classList.remove("timeline-edit-mode");
+  const editButton = document.getElementById("timelineEditButton");
+  const saveButton = document.getElementById("timelineSaveButton");
+  const hint = document.getElementById("timelineSaveHint");
+  if(editButton) editButton.style.display = "";
+  if(saveButton) saveButton.style.display = "none";
+  if(hint) hint.textContent = "閲覧モードです。編集する時は「編集する」を押してください。";
+}
+
+function markTimelineChanged(textarea){
+  const box = textarea.closest("[data-character][data-years-ago]");
+  if(!box) return;
+
+  const characterId = box.dataset.character;
+  const yearsAgo = Number(box.dataset.yearsAgo);
+  const key = timelineKey(characterId, yearsAgo);
+
+  textarea.dataset.dirty = "1";
+  timelineDirtyKeys.add(key);
+
+  if(!timelineEntries[characterId]) timelineEntries[characterId] = {};
+  timelineEntries[characterId][yearsAgo] = textarea.value.trim();
+
+  setUnsavedChanges(true);
+  const message = document.getElementById("message");
+  if(message) message.textContent = "未保存の変更があります";
+}
+
+function collectTimelineEntries(){
+  const map = new Map();
+
+  document.querySelectorAll("[data-character][data-years-ago] textarea").forEach(textarea => {
+    const box = textarea.closest("[data-character][data-years-ago]");
+    const characterId = box.dataset.character;
+    const yearsAgo = Number(box.dataset.yearsAgo);
+    const key = timelineKey(characterId, yearsAgo);
+
+    if(!timelineDirtyKeys.has(key) && textarea.dataset.dirty !== "1") return;
+    if(!characterId || !Number.isFinite(yearsAgo)) return;
+
+    map.set(key, {
+      character_id: characterId,
+      years_ago: yearsAgo,
+      text: textarea.value.trim(),
+      original_updated_at: textarea.dataset.updatedAt || "",
+      updated_at: new Date().toISOString()
+    });
+  });
+
+  return [...map.values()];
+}
+
+async function assertTimelineUnchanged(rows){
+  for(const row of rows){
+    const {data, error} = await sb
+      .from("timeline_entries")
+      .select("updated_at")
+      .eq("character_id", row.character_id)
+      .eq("years_ago", row.years_ago)
+      .maybeSingle();
+
+    if(error) throw error;
+
+    const known = row.original_updated_at || "";
+    const current = data?.updated_at || "";
+
+    if(known && current && !sameTimestamp(current, known)){
+      throw new Error("他の人が同じ時系列セルを先に更新しています。上書きを防ぐため保存を止めました。ページを再読み込みしてください。");
+    }
+    if(!known && current){
+      throw new Error("他の人が同じ時系列セルを先に作成しています。上書きを防ぐため保存を止めました。ページを再読み込みしてください。");
+    }
+  }
+}
+
+async function saveTimeline(){
+  document.getElementById("message").textContent = "保存中...";
+  const rows = collectTimelineEntries();
+
+  if(rows.length === 0){
+    document.getElementById("message").textContent = "保存する変更がありません";
+    leaveTimelineEditMode();
+    return;
+  }
+
+  try{
+    await assertTimelineUnchanged(rows);
+  }catch(error){
+    console.error(error);
+    document.getElementById("message").textContent = error.message;
+    alert(error.message);
+    return;
+  }
+
+  for(const sourceRow of rows){
+    const {original_updated_at, ...row} = sourceRow;
+
+    const existing = await sb
+      .from("timeline_entries")
+      .select("character_id,years_ago")
+      .eq("character_id", row.character_id)
+      .eq("years_ago", row.years_ago)
+      .maybeSingle();
+
+    if(existing.error){
+      document.getElementById("message").textContent = "保存確認に失敗しました：" + existing.error.message;
+      return;
+    }
+
+    let result;
+    if(existing.data){
+      result = await sb
+        .from("timeline_entries")
+        .update({ text: row.text, updated_at: row.updated_at })
+        .eq("character_id", row.character_id)
+        .eq("years_ago", row.years_ago);
+    }else{
+      result = await sb
+        .from("timeline_entries")
+        .insert(row);
+    }
+
+    if(result.error){
+      document.getElementById("message").textContent = "保存に失敗しました：" + result.error.message;
+      return;
+    }
+  }
+
+  document.getElementById("message").textContent = "保存しました";
+  clearUnsavedChanges();
+  leaveTimelineEditMode();
+  await loadTimeline();
+}
+
+loadTimeline().catch(error => {
+  console.error(error);
+  document.getElementById("message").textContent = "読み込みに失敗しました：" + error.message;
+});
 </script>
 </body>
 </html>
