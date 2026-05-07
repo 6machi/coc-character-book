@@ -1,5 +1,5 @@
-coc-character-book v157 visible timeline filters + narrow PC card layout
-- display character filter is always visible
-- wide screens: horizontal table
-- <=1300px: vertical year cards so timeline content cannot disappear
+coc-character-book v159 horizontal timeline stable layout
+- horizontal timeline table preserved
+- display character filter always visible
+- timeline shell has stable visible scroll area
 - no SQL files included
