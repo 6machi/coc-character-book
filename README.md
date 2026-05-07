@@ -1,5 +1,6 @@
-coc-character-book v160 SVG timeline view
-- Supabase keeps text data
-- browser renders timeline as SVG
-- no image files stored
+coc-character-book v161 SVG timeline refinements
+- blank born cells are pale
+- unborn blank cells are gray
+- edit/save controls above the timeline
+- mobile shows vertical timeline
 - no SQL files included

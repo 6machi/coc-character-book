@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>時系列</title>
-<!-- v160: SVG timeline view, text saved to Supabase -->
-<link rel="stylesheet" href="./style.css?v=160">
+<!-- v161: SVG timeline with mobile vertical view -->
+<link rel="stylesheet" href="./style.css?v=161">
 <style>
 .timeline-panel{
   padding:18px;
@@ -20,16 +20,6 @@
   color:var(--muted);
   font-size:13px;
   line-height:1.7;
-}
-.timeline-hint{
-  margin-top:8px;
-  padding:10px 12px;
-  border-radius:14px;
-  background:#fff8e8;
-  border:1px solid #ead7aa;
-  color:#785612;
-  font-size:12px;
-  line-height:1.6;
 }
 
 /* 表示キャラクター */
@@ -90,6 +80,22 @@
   display:block;
 }
 
+/* 表の左上に置く編集/保存 */
+.timeline-table-actions{
+  margin:14px 0 8px;
+  display:flex;
+  flex-wrap:wrap;
+  align-items:center;
+  gap:10px;
+}
+.timeline-table-actions button{
+  min-width:160px;
+}
+.timeline-save-hint{
+  color:var(--muted);
+  font-size:12px;
+}
+
 /* SVG年表 */
 .timeline-svg-shell{
   display:block!important;
@@ -102,7 +108,7 @@
   border:1px solid var(--line);
   box-shadow:var(--glass-shadow-soft);
   background:rgba(255,255,255,.82);
-  margin:14px 0 0;
+  margin:0 0 18px;
   padding:12px;
 }
 .timeline-svg-wrap{
@@ -114,27 +120,6 @@
   background:#fff;
   border-radius:12px;
 }
-.timeline-save-bottom{
-  margin:14px 0 0;
-  display:flex;
-  justify-content:center;
-  position:relative;
-  z-index:2;
-  padding:0 0 18px;
-}
-.timeline-save-bottom .timeline-save-box{
-  display:grid;
-  gap:8px;
-  justify-items:center;
-}
-.timeline-save-bottom button{
-  min-width:240px;
-}
-.timeline-save-hint{
-  text-align:center;
-  color:var(--muted);
-  font-size:12px;
-}
 .timeline-empty-message{
   padding:30px 18px;
   color:var(--muted);
@@ -143,6 +128,92 @@
   background:rgba(255,255,255,.72);
   border-radius:14px;
 }
+
+/* スマホ縦表示 */
+.timeline-mobile-wrap{
+  display:none;
+}
+.timeline-mobile-year{
+  background:rgba(255,255,255,.86);
+  border:1px solid var(--line);
+  border-radius:20px;
+  box-shadow:var(--glass-shadow-soft);
+  overflow:hidden;
+  margin:0 0 14px;
+}
+.timeline-mobile-year-title{
+  background:#3f86c4;
+  color:#fff;
+  font-size:20px;
+  font-weight:950;
+  padding:14px 12px;
+}
+.timeline-mobile-cell{
+  --c:#999;
+  border-bottom:1px solid #d6deea;
+  background:#fff;
+}
+.timeline-mobile-cell:last-child{
+  border-bottom:0;
+}
+.timeline-mobile-character{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  padding:8px 10px;
+  background:color-mix(in srgb,var(--c) 28%,#ffffff);
+  border-bottom:1px solid color-mix(in srgb,var(--c) 36%,#d6deea);
+  font-size:13px;
+  font-weight:950;
+}
+.timeline-mobile-character .timeline-face{
+  width:26px;
+  height:26px;
+  border-radius:8px;
+}
+.timeline-mobile-age{
+  margin-left:auto;
+  color:#202532;
+  font-weight:950;
+}
+.timeline-mobile-text{
+  padding:10px 12px;
+  font-size:13px;
+  font-weight:800;
+  line-height:1.65;
+  white-space:pre-wrap;
+  overflow-wrap:anywhere;
+  background:color-mix(in srgb,var(--c) 8%,#fff);
+}
+.timeline-mobile-text.empty{
+  color:#c4cad5;
+  background:#fbfcff;
+}
+.timeline-mobile-cell.unborn-empty{
+  background:#f2f4f7;
+}
+.timeline-mobile-cell.unborn-empty .timeline-mobile-character{
+  background:#d9dde4;
+  color:#7f8798;
+  border-bottom-color:#cbd1db;
+}
+.timeline-mobile-cell.unborn-empty .timeline-mobile-text{
+  background:#f5f6f8;
+  color:#a0a6b4;
+}
+.timeline-mobile-cell textarea{
+  width:100%;
+  min-height:92px;
+  border:0;
+  resize:vertical;
+  padding:10px 12px;
+  background:color-mix(in srgb,var(--c) 8%,#fff);
+  color:#243042;
+  font:800 13px -apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;
+  line-height:1.55;
+  box-sizing:border-box;
+}
+
 @media(max-width:760px){
   .timeline-panel{
     padding:16px;
@@ -151,10 +222,19 @@
     grid-template-columns:1fr!important;
   }
   .timeline-svg-shell{
-    border-radius:20px;
-    padding:10px;
+    display:none!important;
   }
-  .timeline-save-bottom button{
+  .timeline-mobile-wrap{
+    display:block;
+  }
+  .timeline-table-actions{
+    position:sticky;
+    top:0;
+    z-index:20;
+    padding:8px 0;
+    background:linear-gradient(180deg,rgba(255,255,255,.98),rgba(255,255,255,.9));
+  }
+  .timeline-table-actions button{
     width:100%;
   }
 }
@@ -187,7 +267,13 @@
             <rect x="500" y="430" width="200" height="520" rx="95"/>
           </svg>
         </button>
-        <span class="info-pop">保存済みテキストをもとに、ブラウザ上で横長の年表として表示します。画像ファイルは保存しません。</span>
+        <span class="info-pop">
+          ・表示／非表示で確認したいキャラの年表だけ確認できます<br>
+          ・編集→保存で内容が記録されます<br>
+          ・未出生でグレーアウトされたところにも出来事を記載できます<br>
+          ・キャラカードから年齢を自動算出しています<br>
+          ・スマホでみると縦表記になります、表で確認したい場合はPC推奨
+        </span>
       </span>
     </div>
     <div class="timeline-toolbar">
@@ -195,7 +281,6 @@
       <button class="secondary-button" id="hideEmptyYearsBtn" onclick="toggleEmptyYears()">出来事のない年を非表示</button>
       <span id="message" class="timeline-message">読み込み中...</span>
     </div>
-    <div class="timeline-hint">スマホや細いウィンドウでは左右にスクロールして、各キャラの列を確認できます。</div>
   </section>
 
   <section class="panel timeline-filter-panel">
@@ -206,24 +291,24 @@
     <div id="timelineCharacterFilter" class="timeline-filter-list"></div>
   </section>
 
+  <section class="timeline-table-actions">
+    <button id="timelineEditButton" onclick="enterTimelineEditMode()">編集する</button>
+    <button id="timelineSaveButton" onclick="saveTimeline()" style="display:none">時系列を保存する</button>
+    <div class="timeline-save-hint" id="timelineSaveHint">閲覧モードです。編集する時は「編集する」を押してください。</div>
+  </section>
+
   <section class="timeline-svg-shell">
     <div class="timeline-svg-wrap" id="timelineSvgWrap"></div>
   </section>
 
-  <section class="timeline-save-bottom">
-    <div class="timeline-save-box">
-      <button id="timelineEditButton" onclick="enterTimelineEditMode()">編集する</button>
-      <button id="timelineSaveButton" onclick="saveTimeline()" style="display:none">時系列を保存する</button>
-      <div class="timeline-save-hint" id="timelineSaveHint">閲覧モードです。編集する時は「編集する」を押してください。</div>
-    </div>
-  </section>
+  <section class="timeline-mobile-wrap" id="timelineMobileWrap"></section>
 </main>
 
 <div class="unsaved-pill">未保存の変更があります</div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="./config.js?v=160"></script>
-<script src="./common.js?v=160"></script>
+<script src="./config.js?v=161"></script>
+<script src="./common.js?v=161"></script>
 <script>initSiteTitle();</script>
 
 <script>
@@ -290,9 +375,9 @@ async function loadTimeline(){
   });
 
   clearUnsavedChanges();
-  leaveTimelineEditMode();
+  leaveTimelineEditMode(false);
   renderTimelineFilter();
-  renderTimelineSvg();
+  renderTimelineViews();
   showTimelineMessage("読み込みました");
 }
 
@@ -376,20 +461,20 @@ function renderTimelineFilter(){
 function toggleTimelineCharacter(input){
   if(input.checked) selectedTimelineCharacters.add(input.value);
   else selectedTimelineCharacters.delete(input.value);
-  renderTimelineSvg();
+  renderTimelineViews();
 }
 
 function selectAllTimelineCharacters(){
   selectedTimelineCharacters = new Set(timelineCharacters.map(character => character.id));
   renderTimelineFilter();
-  renderTimelineSvg();
+  renderTimelineViews();
 }
 
 function toggleEmptyYears(){
   hideEmptyYears = !hideEmptyYears;
   const button = document.getElementById("hideEmptyYearsBtn");
   if(button) button.textContent = hideEmptyYears ? "すべての年を表示" : "出来事のない年を非表示";
-  renderTimelineSvg();
+  renderTimelineViews();
 }
 
 function hexToRgb(hex){
@@ -405,12 +490,6 @@ function mixColor(hex, amount){
   const g = Math.round(rgb.g * amount + 255 * (1 - amount));
   const b = Math.round(rgb.b * amount + 255 * (1 - amount));
   return `rgb(${r},${g},${b})`;
-}
-
-function textColorFor(hex){
-  const {r,g,b} = hexToRgb(hex);
-  const y = (r*299 + g*587 + b*114) / 1000;
-  return y > 170 ? "#202532" : "#ffffff";
 }
 
 function svgEsc(value){
@@ -460,10 +539,20 @@ function calcTimelineRows(characters, years){
   });
 }
 
-function renderTimelineSvg(){
-  const wrap = document.getElementById("timelineSvgWrap");
+function renderTimelineViews(){
+  renderTimelineSvg();
+  renderTimelineMobile();
+}
+
+function currentTimelineData(){
   const characters = visibleTimelineCharacters();
   const years = timelineYears(characters);
+  return {characters, years};
+}
+
+function renderTimelineSvg(){
+  const wrap = document.getElementById("timelineSvgWrap");
+  const {characters, years} = currentTimelineData();
 
   if(!timelineCharacters.length){
     wrap.innerHTML = '<div class="timeline-empty-message">年齢が登録されているキャラクターがまだいません。</div>';
@@ -524,10 +613,21 @@ function renderTimelineSvg(){
       const unborn = Number(character.currentAge) - Number(year) < 0;
       const placeholder = unborn ? "未出生" : "この時期の出来事";
       const display = hasText ? text : placeholder;
-      const emptyUnborn = unborn && !hasText;
-      const ageFill = emptyUnborn ? "#d9dde4" : mixColor(color, .36);
-      const cellFill = emptyUnborn ? "#f5f6f8" : mixColor(color, .10);
-      const textFill = emptyUnborn ? "#9aa3b2" : "#243042";
+
+      let ageFill, cellFill, textFill;
+      if(unborn && !hasText){
+        ageFill = "#d9dde4";
+        cellFill = "#f5f6f8";
+        textFill = "#a0a6b4";
+      }else if(!hasText){
+        ageFill = mixColor(color, .22);
+        cellFill = "#fbfcff";
+        textFill = "#c4cad5";
+      }else{
+        ageFill = mixColor(color, .36);
+        cellFill = mixColor(color, .10);
+        textFill = "#243042";
+      }
 
       svg += `<rect x="${x}" y="${y}" width="${timelineLayout.colW}" height="${rowHeight}" fill="#ffffff" stroke="#d6deea"/>`;
       svg += `<rect x="${x}" y="${y}" width="${timelineLayout.colW}" height="${timelineLayout.ageH}" fill="${svgEsc(ageFill)}" stroke="#d6deea"/>`;
@@ -542,7 +642,7 @@ function renderTimelineSvg(){
             data-updated-at="${e(updatedAt)}"
             oninput="markTimelineChanged(this)"
             placeholder="${svgEsc(placeholder)}"
-            style="width:100%;height:100%;border:0;padding:9px 10px;resize:none;background:${cellFill};font:800 13px -apple-system,BlinkMacSystemFont,'Hiragino Sans','Yu Gothic',sans-serif;line-height:1.55;color:${textFill};box-sizing:border-box;">${svgEsc(text)}</textarea>
+            style="width:100%;height:100%;border:0;padding:9px 10px;resize:none;background:${cellFill};font:800 13px -apple-system,BlinkMacSystemFont,'Hiragino Sans','Yu Gothic',sans-serif;line-height:1.55;color:#243042;box-sizing:border-box;">${svgEsc(text)}</textarea>
         </foreignObject>`;
       }else{
         svg += `<rect x="${x}" y="${y + timelineLayout.ageH}" width="${timelineLayout.colW}" height="${rowHeight - timelineLayout.ageH}" fill="${svgEsc(cellFill)}"/>`;
@@ -563,6 +663,78 @@ function renderTimelineSvg(){
   wrap.innerHTML = svg;
 }
 
+function renderTimelineMobile(){
+  const wrap = document.getElementById("timelineMobileWrap");
+  if(!wrap) return;
+
+  const {characters, years} = currentTimelineData();
+
+  if(!timelineCharacters.length){
+    wrap.innerHTML = '<div class="timeline-empty-message">年齢が登録されているキャラクターがまだいません。</div>';
+    return;
+  }
+
+  if(!characters.length){
+    wrap.innerHTML = '<div class="timeline-empty-message">表示するキャラクターを選んでください。</div>';
+    return;
+  }
+
+  if(!years.length){
+    wrap.innerHTML = '<div class="timeline-empty-message">表示できる出来事がありません。「すべての年を表示」に戻して入力してください。</div>';
+    return;
+  }
+
+  wrap.innerHTML = years.map(year => {
+    const cells = characters.map(character => {
+      const color = characterColor(character);
+      const text = timelineEntries?.[character.id]?.[year] || "";
+      const updatedAt = timelineEntryMeta?.[character.id]?.[year] || "";
+      const hasText = !!text.trim();
+      const unborn = Number(character.currentAge) - Number(year) < 0;
+      const placeholder = unborn ? "未出生" : "この時期の出来事";
+      const unbornClass = unborn && !hasText ? "unborn-empty" : "";
+      const emptyClass = !hasText ? "empty" : "";
+
+      if(timelineEditMode){
+        return `
+          <div class="timeline-mobile-cell ${unbornClass}" style="--c:${color}">
+            <div class="timeline-mobile-character">
+              ${characterFace(character)}
+              <span>${e(character.name || "名前未設定")}</span>
+              <span class="timeline-mobile-age">${e(ageLabel(character, year))}</span>
+            </div>
+            <textarea
+              data-character="${e(character.id)}"
+              data-years-ago="${year}"
+              data-original="${c(text)}"
+              data-updated-at="${e(updatedAt)}"
+              oninput="markTimelineChanged(this)"
+              placeholder="${e(placeholder)}">${e(text)}</textarea>
+          </div>
+        `;
+      }
+
+      return `
+        <div class="timeline-mobile-cell ${unbornClass}" style="--c:${color}">
+          <div class="timeline-mobile-character">
+            ${characterFace(character)}
+            <span>${e(character.name || "名前未設定")}</span>
+            <span class="timeline-mobile-age">${e(ageLabel(character, year))}</span>
+          </div>
+          <div class="timeline-mobile-text ${emptyClass}">${hasText ? e(text) : e(placeholder)}</div>
+        </div>
+      `;
+    }).join("");
+
+    return `
+      <section class="timeline-mobile-year">
+        <div class="timeline-mobile-year-title">${e(yearLabel(year))}</div>
+        ${cells}
+      </section>
+    `;
+  }).join("");
+}
+
 function enterTimelineEditMode(){
   timelineEditMode = true;
   const editButton = document.getElementById("timelineEditButton");
@@ -571,10 +743,10 @@ function enterTimelineEditMode(){
   if(editButton) editButton.style.display = "none";
   if(saveButton) saveButton.style.display = "";
   if(hint) hint.textContent = "編集モードです。入力後は保存してください。";
-  renderTimelineSvg();
+  renderTimelineViews();
 }
 
-function leaveTimelineEditMode(){
+function leaveTimelineEditMode(render = true){
   timelineEditMode = false;
   const editButton = document.getElementById("timelineEditButton");
   const saveButton = document.getElementById("timelineSaveButton");
@@ -582,7 +754,7 @@ function leaveTimelineEditMode(){
   if(editButton) editButton.style.display = "";
   if(saveButton) saveButton.style.display = "none";
   if(hint) hint.textContent = "閲覧モードです。編集する時は「編集する」を押してください。";
-  renderTimelineSvg();
+  if(render) renderTimelineViews();
 }
 
 function markTimelineChanged(textarea){
