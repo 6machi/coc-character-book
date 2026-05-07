@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>時系列</title>
-<!-- v153: timeline filter accordion above table -->
-<link rel="stylesheet" href="./style.css?v=153">
+<!-- v154: timeline filter popover above table -->
+<link rel="stylesheet" href="./style.css?v=154">
 <style>
 .timeline-panel{padding:18px;position:relative;z-index:20}
 .timeline-toolbar{display:flex;flex-wrap:wrap;gap:9px;align-items:center;margin-top:13px}
@@ -100,10 +100,10 @@ body.timeline-edit-mode .timeline-edit-field{display:block}
 .timeline-filter-accordion.open .timeline-filter-toggle::after{
   content:"－";
 }
-.timeline-filter-body{
+.timeline-filter-body-old{
   margin-top:12px;
 }
-.timeline-filter-body[hidden]{
+.timeline-filter-body-old[hidden]{
   display:none!important;
 }
 .timeline-shell{
@@ -134,6 +134,104 @@ body.timeline-edit-mode .timeline-edit-field{display:block}
   .timeline-shell{
     max-height:58vh!important;
     min-height:300px!important;
+  }
+}
+
+
+/* v154: display-character filter is a popover, not a tall panel */
+.timeline-filter-popover-wrap{
+  position:relative;
+  z-index:50;
+  margin:10px 0 12px;
+  width:min(100%, 560px);
+}
+.timeline-filter-toggle{
+  width:100%;
+  text-align:left;
+  display:flex!important;
+  justify-content:space-between;
+  align-items:center;
+}
+.timeline-filter-toggle::after{
+  content:"＋";
+  font-weight:950;
+}
+.timeline-filter-popover-wrap.open .timeline-filter-toggle::after{
+  content:"－";
+}
+.timeline-filter-popover{
+  position:absolute;
+  left:0;
+  top:calc(100% + 8px);
+  width:min(720px, calc(100vw - 28px));
+  max-height:min(62vh, 560px);
+  overflow:auto;
+  padding:16px;
+  border-radius:22px;
+  border:1px solid rgba(255,255,255,.92);
+  background:rgba(255,255,255,.96);
+  box-shadow:0 22px 54px rgba(73,82,110,.22);
+  backdrop-filter:blur(14px);
+  -webkit-backdrop-filter:blur(14px);
+}
+.timeline-filter-popover[hidden]{
+  display:none!important;
+}
+.timeline-filter-popover-head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  margin-bottom:12px;
+}
+.timeline-filter-popover-head strong{
+  font-size:18px;
+  font-weight:950;
+}
+.timeline-filter-close{
+  width:auto!important;
+  min-width:0!important;
+  padding:8px 12px!important;
+}
+.timeline-filter-list{
+  grid-template-columns:repeat(auto-fit,minmax(180px,1fr))!important;
+}
+.timeline-filter-chip{
+  min-height:42px;
+}
+.timeline-shell{
+  margin-top:12px!important;
+  position:relative!important;
+  z-index:1!important;
+  display:block!important;
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+  overflow:auto!important;
+}
+.timeline-board{
+  width:max-content!important;
+  min-width:max-content!important;
+}
+@media(max-width:760px){
+  .timeline-filter-popover-wrap{
+    width:100%;
+  }
+  .timeline-filter-popover{
+    width:100%;
+    max-height:52vh;
+    padding:14px;
+    border-radius:20px;
+  }
+  .timeline-filter-list{
+    grid-template-columns:1fr!important;
+  }
+  .timeline-filter-chip{
+    min-height:44px;
+  }
+  .timeline-shell{
+    min-height:300px!important;
+    max-height:58vh!important;
   }
 }
 
@@ -177,11 +275,16 @@ body.timeline-edit-mode .timeline-edit-field{display:block}
     <div class="timeline-mobile-hint">スマホでは左右にスクロールして、各キャラの列を確認できます。</div>
   </section>
 
-  <section class="panel timeline-filter-panel timeline-filter-accordion">
+
+  <section class="timeline-filter-popover-wrap">
     <button class="timeline-filter-toggle secondary-button" type="button" onclick="toggleTimelineFilterPanel()">
       表示キャラクターを開く
     </button>
-    <div class="timeline-filter-body" id="timelineFilterBody" hidden>
+    <div class="timeline-filter-popover" id="timelineFilterBody" hidden>
+      <div class="timeline-filter-popover-head">
+        <strong>表示キャラクター</strong>
+        <button class="secondary-button timeline-filter-close" type="button" onclick="toggleTimelineFilterPanel(true)">閉じる</button>
+      </div>
       <div class="timeline-filter-actions">
         <button class="secondary-button" onclick="selectAllTimelineCharacters()">全員表示</button>
       </div>
@@ -189,7 +292,7 @@ body.timeline-edit-mode .timeline-edit-field{display:block}
     </div>
   </section>
 
-  <section class="timeline-shell" id="timelineShell">
+<section class="timeline-shell" id="timelineShell">
     <div class="timeline-board" id="timelineBoard"></div>
   </section>
 
@@ -205,8 +308,8 @@ body.timeline-edit-mode .timeline-edit-field{display:block}
 <div class="unsaved-pill">未保存の変更があります</div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="./config.js?v=153"></script>
-<script src="./common.js?v=153"></script>
+<script src="./config.js?v=154"></script>
+<script src="./common.js?v=154"></script>
 <script>initSiteTitle();</script>
 
 <script>
@@ -566,15 +669,15 @@ async function saveTimeline(){
 }
 
 
-function toggleTimelineFilterPanel(){
-  const panel = document.querySelector(".timeline-filter-accordion");
+function toggleTimelineFilterPanel(forceClose){
+  const wrap = document.querySelector(".timeline-filter-popover-wrap");
   const body = document.getElementById("timelineFilterBody");
   const button = document.querySelector(".timeline-filter-toggle");
-  if(!panel || !body || !button) return;
-  const isOpen = !body.hidden;
-  body.hidden = isOpen;
-  panel.classList.toggle("open", !isOpen);
-  button.textContent = isOpen ? "表示キャラクターを開く" : "表示キャラクターを閉じる";
+  if(!wrap || !body || !button) return;
+  const shouldClose = forceClose === true ? true : !body.hidden;
+  body.hidden = shouldClose;
+  wrap.classList.toggle("open", !shouldClose);
+  button.textContent = shouldClose ? "表示キャラクターを開く" : "表示キャラクターを閉じる";
 }
 
 loadTimeline().catch(error => {
